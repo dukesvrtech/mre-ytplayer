@@ -1,0 +1,7 @@
+{
+	"name": "Heads Up",
+	"author": "Microsoft",
+	"license": "MIT",
+	"repositoryUrl": "https://github.com/hreid3/mre-heads-up",
+	"optionalPermissions": ["user-interaction"]
+}

@@ -1,0 +1,71 @@
+{
+  "name": "yt-player",
+  "version": "0.0.1",
+  "description": "",
+  "main": "built/server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+"
+  },
+  "keywords": [
+    "mixed reality",
+    "virtual reality",
+    "vr",
+    "altspacevr",
+    "node"
+  ],
+  "engines": {
+    "node": "16.x",
+    "npm": "8.x"
+  },
+  "author": "Dukes VR Tech",
+  "license": "MIT",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "scripts": {
+    "test": "jest --passWithNoTests",
+    "clean": "tsc --build --clean",
+    "build": "tsc --build",
+    "build-only": "tsc --build",
+    "build-watch": "tsc --build --watch --preserveWatchOutput",
+    "lint": "eslint --ext .ts src",
+    "lint:fix": "eslint --fix --ext .ts src",
+		"start": "node -r dotenv/config .",
+    "start-watch": "nodemon --nolazy -r dotenv/config --inspect .",
+    "debug": "node -r dotenv/config --nolazy --inspect=9229 .",
+    "debug-watch": "npm run build-only && concurrently \"npm run build-watch\" \"nodemon --nolazy -r dotenv/config --inspect=9229 .\"",
+    "debug-watch-brk": "npm run build-only && concurrently \"npm run build-watch\" \"nodemon --nolazy -r dotenv/config --inspect-brk=9229 .\"",
+    "release": "release-it",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/node": "^10.17.59",
+    "@types/restify": "^8.5.4",
+    "@typescript-eslint/eslint-plugin": "^2.17.0",
+    "@typescript-eslint/parser": "^2.17.0",
+    "concurrently": "^5.1.0",
+    "eslint": "^6.8.0",
+    "husky": "^6.0.0",
+    "jest": "^26.6.3",
+    "nodemon": "^2.0.2",
+    "release-it": "^14.6.2",
+    "ts-jest": "^26.5.6",
+    "typescript": "^4.6.2"
+  },
+  "dependencies": {
+    "@microsoft/mixed-reality-extension-sdk": "file:packages/microsoft-mixed-reality-extension-sdk-0.20.0.tgz",
+    "@types/dotenv": "^6.1.0",
+    "@types/lodash.debounce": "^4.0.7",
+    "@types/node": "^14.0.13",
+    "@types/word-wrap": "^1.2.1",
+    "dotenv": "^6.2.0",
+    "lodash.debounce": "^4.0.8",
+    "node-cache": "^5.1.2",
+    "word-wrap": "^1.2.3",
+    "youtube-search-api": "^1.1.0",
+    "ytdl-core": "^4.11.0"
+  }
+}
