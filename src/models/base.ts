@@ -6,7 +6,7 @@ export type Pager = {
 	pageSize: number;
 	displayed: boolean;
 	totalCount: number;
-	numberPages?: number
+	numberPages?: number;
 }
 
 export type MyScreenContext = MRE.Context & {
@@ -38,10 +38,10 @@ export type MyScreenContext = MRE.Context & {
 		nextPageButton: MRE.Actor;
 		prevPageButton: MRE.Actor;
 		closeButton: MRE.Actor;
-	}
+	};
 	ytPagerButtons?: {
 		closeButton: MRE.Actor;
-	},
+	};
 }
 export type MyScreenUser = MRE.User & {
 

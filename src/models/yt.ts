@@ -16,42 +16,42 @@ export interface YouTubeVideoStream {
 	enabled?: boolean;
 	title?: string;
 	author?: string;
-	live?: boolean
+	live?: boolean;
 }
 export type YoutubeSearchResult = {
-	items: YoutubeSearchResultItem[],
+	items: YoutubeSearchResultItem[];
 	// ne
 }
 export type YoutubeSearchResultItem = {
-	"id": string,
-	"type": "video",
+	"id": string;
+	"type": "video";
 	"thumbnail": {
-		"thumbnails": Thumbnail[],
-	},
-	"title": string,
-	"channelTitle": string,
+		"thumbnails": Thumbnail[];
+	};
+	"title": string;
+	"channelTitle": string;
 	"length": {
-		"simpleText": string
-	},
-	"isLive": boolean
+		"simpleText": string;
+	};
+	"isLive": boolean;
 	"shortBylineText": any;
 };
 export type YoutubeFormats = YoutubeFormat[];
 export type YoutubeFormat = {
-	vbr: number,
-	format_note: string,
-	vcodec: string,
-	format_id: string,
-	fps:number,
-	height: number,
-	protocol: string,
-	width: number,
-	filesize:number,
-	acodec: string,
-	quality:number,
-	url:string,
-	tbr: number,
-	ext: 'mp4',
-	container:"webm_dash",
-	format:string,
+	vbr: number;
+	format_note: string;
+	vcodec: string;
+	format_id: string;
+	fps: number;
+	height: number;
+	protocol: string;
+	width: number;
+	filesize: number;
+	acodec: string;
+	quality: number;
+	url: string;
+	tbr: number;
+	ext: 'mp4';
+	container: "webm_dash";
+	format: string;
 }
