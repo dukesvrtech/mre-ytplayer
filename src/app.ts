@@ -15,7 +15,7 @@ import {YouTubeVideoStream} from "./models/yt";
 import * as process from "process";
 
 const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
-	volume: 0.45,
+	volume: 0.5,
 	spread: 0.0,
 	rolloffStartDistance: 50,
 	time: 0,
@@ -53,7 +53,11 @@ export default class App implements MediaControlHandler {
 			await this.onStop(user)
 		}
 		this.context.currentVideoStream = stream
+		const currentSoundOptions = this.context.soundOptions;
 		this.context.soundOptions = getDefaultSoundOptions();
+		if (currentSoundOptions?.volume) {
+			this.context.soundOptions.volume = currentSoundOptions.volume;
+		}
 		this.context.progress = undefined;
 		await this.onPlay(user);
 	};
@@ -82,7 +86,6 @@ export default class App implements MediaControlHandler {
 					uri: ytVideo.uri
 				}
 			);
-			console.log("Horace.sound options", soundOptions)
 			this.context.progress = this.context.progress || {
 				runningTime: 0,
 				startTime: 0,
@@ -121,7 +124,6 @@ export default class App implements MediaControlHandler {
 		if (this.mediaInstance) {
 			if (state === "playing") {
 				clearInterval(this.context.currentStreamIntervalInterval)
-				console.log("Horce", this.context.soundOptions);
 				this.mediaInstance.stop();
 				this.context.state = 'stopped';
 				// this.assets.
@@ -211,11 +213,36 @@ export default class App implements MediaControlHandler {
 		this.context.videoActor = videoActor;
 		this.playerControls = new PlayerControls(this.context, this.assets, this);
 		this.playerControls.createUserControls(this.root)
-
+		this.setVolumeLabel()
 		this.initialized = true;
 	};
 
 	private stopped = () => {
+		this.selectionsController?.destroyAssets();
+		this.mediaVideoStream.breakAllReferences();
+		this.assets.unload();
+		this.context?.ytSelectionPanel?.destroy();
+		this.root?.destroy();
 		console.log(this.context.sessionId, "App Stopped");
 	};
+
+	onVolumeChange = (direction: "up" | "down") => {
+		const soundOptions = this.context.soundOptions
+		const vol = Math.round(soundOptions.volume * 100) / 100;
+		if (direction === 'down') {
+			soundOptions.volume = vol >= 1.0 ? 1.0 : vol + (vol < .1 ? .02 : .1);
+		} else {
+			soundOptions.volume = vol <= 0.0 ? 0.0 : vol - (vol <= .1 ? .02 : .1);
+		}
+		this.mediaInstance?.setState({volume: soundOptions.volume});
+		this.context.soundOptions = soundOptions;
+		this.setVolumeLabel();
+	}
+	setVolumeLabel = () => {
+		if (this.context.soundOptions && this.context.volumeLabel) {
+			const val = this.context.soundOptions.volume * 100;
+			this.context.volumeLabel.text.contents = `Vol: ${Math.round(val)}%`;
+		}
+	}
 }
+

@@ -22,6 +22,9 @@ export type MyScreenContext = MRE.Context & {
 	rewindButton?: MRE.Actor;
 	fastFwdButton?: MRE.Actor;
 	menuButton?: MRE.Actor;
+	volumeUpButton?: MRE.Actor;
+	volumeDownButton?: MRE.Actor;
+	volumeLabel?: MRE.Actor;
 
 	remainingTimeLabel?: MRE.Actor;
 	updateRemainingTime?: (val: number) => void;

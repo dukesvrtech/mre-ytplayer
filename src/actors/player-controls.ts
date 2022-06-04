@@ -4,18 +4,13 @@ import {secondsToString} from "../utils";
 import wordWrap from "word-wrap";
 import {MyScreenContext, MyScreenUser} from "../models/base";
 import {MediaControlHandler, MediaControlHandlerActions} from "../models/controls";
+import {debounce} from "debounce";
 
 export class PlayerControls {
 
 	playButtonMesh: MRE.Mesh;
 	imageButtonMesh: MRE.Mesh;
-
-	// buttonMaterials: {
-	//     hover: MRE.Material;
-	//     default: MRE.Material;
-	//     active: MRE.Material;
-	// }
-	// stopButtonMesh: MRE.Mesh;
+	// private arrowMesh: MRE.Mesh;
 
 	constructor(
     private context: MyScreenContext,
@@ -23,6 +18,7 @@ export class PlayerControls {
     private mediaControlHandler: MediaControlHandler) {
 		this.playButtonMesh = assets.createCylinderMesh('arrow', 0.005, 0.08, 'z', 3);
 		this.imageButtonMesh = assets.createPlaneMesh(`plane-movie-card-mesh`, 0.075, 0.075);
+		// this.arrowMesh = this.assets.createCylinderMesh('arrow', 0.005, 0.08, 'z', 3);
 	}
 
 	getImageButtonMaterial = (id: string, uri: string): MRE.Material => {
@@ -146,6 +142,10 @@ export class PlayerControls {
 					});
 				}
 			}
+			const { volumeDownButton, volumeUpButton, volumeLabel } = this.setupVolumeControls(parentActor);
+			this.context.volumeDownButton = volumeUpButton;
+			this.context.volumeUpButton = volumeDownButton;
+			this.context.volumeLabel = volumeLabel;
 			const controlScale = 0.45;
 			const controlActor = MRE.Actor.Create(this.context, {
 				actor: {
@@ -226,6 +226,102 @@ export class PlayerControls {
 		}
 	}
 
+	setupVolumeControls = (parent: MRE.Actor) => {
+		const volDownMat = this.getImageButtonMaterial('play', '/images/VolumeDown.png');
+		const volUpMat = this.getImageButtonMaterial('stop', '/images/VolumeUp.png');
+		const volScale = .6;
+		const root = MRE.Actor.Create(this.context, {
+			actor: {
+				name: `base-volume-Root`,
+				parentId: parent.id,
+				appearance: {enabled: true},
+				grabbable: true,
+				transform: {
+					local: {
+						position: { z: -0.01, y: 0.31, x: 0.375},
+						scale: { x: volScale, y: volScale, z: volScale }
+
+					}
+				}
+			}
+		});
+		const layout = new MRE.PlanarGridLayout(root);
+		const cw = 0.065, ch = 0.1;
+		const arrowScale = 0.60;
+		let volumeLabel: MRE.Actor, volumeUpButton: MRE.Actor, volumeDownButton: MRE.Actor;
+		layout.addCell({
+			row: 0,
+			column: 2,
+			width: cw / 4,
+			height: ch,
+			// alignment: BoxAlignment.MiddleCenter,
+			contents: volumeLabel = MRE.Actor.Create(this.context, {
+				actor: {
+					name: `volume-label`,
+					parentId: root.id,
+					// appearance: { enabled: this.groupMask },
+					text: {
+						contents: `test`,
+						height: 0.0225,
+						anchor: MRE.TextAnchorLocation.MiddleLeft,
+						justify: MRE.TextJustify.Left,
+						color: MRE.Color3.DarkGray(),
+					}
+				}
+			})
+		});
+
+		layout.addCell({
+			row: 0,
+			column: 0,
+			width: cw,
+			height: ch,
+			// alignment: BoxAlignment.MiddleCenter,
+			contents: volumeDownButton = MRE.Actor.Create(this.context, {
+				actor: {
+					name: `volumen-down`,
+					parentId: root.id,
+					appearance: {
+						meshId:  this.imageButtonMesh.id,
+						materialId: volDownMat.id
+						// enabled: this.groupMask
+					},
+					collider: {geometry: {shape: MRE.ColliderType.Auto}},
+					transform: {local: {
+						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+					}
+					}
+				}
+			})
+		});
+
+		layout.addCell({
+			row: 0,
+			column: 1,
+			width: cw,
+			height: ch,
+			// alignment: BoxAlignment.MiddleCenter,
+			contents: volumeUpButton = MRE.Actor.Create(this.context, {
+				actor: {
+					name: `volumen-up`,
+					parentId: root.id,
+					appearance: {
+						meshId:  this.imageButtonMesh.id,
+						materialId: volUpMat.id
+					},
+					collider: {geometry: {shape: MRE.ColliderType.Auto}},
+					transform: {local: {
+						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+					}
+					}
+				}
+			})
+		});
+		layout.applyLayout()
+		return { volumeUpButton, volumeDownButton, volumeLabel }
+	}
 	attachBehaviors() {
 		if (
 			this.context.playButton &&
@@ -244,7 +340,12 @@ export class PlayerControls {
 			this.context.rewindButton.setBehavior(MRE.ButtonBehavior).onClick(this.handleRewindButton);
 			this.context.fastFwdButton.setBehavior(MRE.ButtonBehavior).onClick(this.handleFFButton);
 			this.context.menuButton.setBehavior(MRE.ButtonBehavior).onClick(this.handleMenuButton);
-
+		}
+		if (this.context.volumeDownButton && this.context.volumeUpButton) {
+			this.context.volumeDownButton.setBehavior(MRE.ButtonBehavior)
+				.onHover('hovering', debounce(this.handleVolumeChange("down"), 125))
+			this.context.volumeUpButton.setBehavior(MRE.ButtonBehavior)
+				.onHover('hovering', debounce(this.handleVolumeChange("up"), 125))
 		}
 	}
 
@@ -263,5 +364,14 @@ export class PlayerControls {
 	handleRewindButton = async (user1: MyScreenUser) => this.handleButtonAction(user1, 'onRewind');
 	handleFFButton = async (user1: MyScreenUser) => this.handleButtonAction(user1, 'onFastForward');
 	handleMenuButton = async (user1: MyScreenUser) => this.handleButtonAction(user1, 'onOpenMenu');
-
+	handleVolumeChange = (dir: 'up' | 'down') => (user1: MyScreenUser) => {
+		if (!this.context.ignoreClicks) {
+			try {
+				this.context.ignoreClicks = true;
+				this.mediaControlHandler.onVolumeChange(dir);
+			} finally {
+				this.context.ignoreClicks = false
+			}
+		}
+	}
 }

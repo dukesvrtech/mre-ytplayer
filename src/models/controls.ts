@@ -7,7 +7,7 @@ export type MediaControlHandlerActions =
 	| 'onRewind'
 	| 'onFastForward'
 	| 'onOpenMenu'
-	| 'onCloseMenu';
+	| 'onCloseMenu'
 
 export interface MediaControlHandler {
 	onPlay: (user: MyScreenUser) => Promise<void>;
@@ -16,6 +16,7 @@ export interface MediaControlHandler {
 	onFastForward: (user: MyScreenUser) => Promise<void>;
 	onOpenMenu: (user: MyScreenUser) => Promise<void>;
 	onCloseMenu: (user: MyScreenUser) => Promise<void>;
+	onVolumeChange: (direction: 'up' | 'down') => void;
 	handlePlayButtonClick: (user: MyScreenUser, stream: YouTubeVideoStream) => Promise<void>;
 	// handlePlayButtonClick: (user: SoloUser, syncVideoStream: SynchronizedUserVideoStream) => Promise<void>;
 	// canShowSelections: (user: SoloUser) => Promise<boolean>;

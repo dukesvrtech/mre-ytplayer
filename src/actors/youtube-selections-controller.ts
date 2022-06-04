@@ -101,12 +101,12 @@ export class YoutubeSelectionsController {
 		delete this.currentPlayMaterial;
 		if (this.displayCardsBase) {
 			this.displayCardsBase.appearance.enabled = false;
-			this.displayCardsBase?.destroy();
+			// this.displayCardsBase?.destroy();
 			this.displayCardsBase = undefined;
 		}
 		if (this.controlActor) {
 			this.controlActor.appearance.enabled = false;
-			this.controlActor.destroy();
+			// this.controlActor.destroy();
 			this.controlActor = undefined;
 		}
 	}
