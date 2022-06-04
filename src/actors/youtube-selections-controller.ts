@@ -8,7 +8,7 @@ import {MediaControlHandler} from "../models/controls";
 import {getVideoStreamFromSearch} from "../services/yt-service";
 
 const pageSize = 18;
-const chooserScale = 1;
+const chooserScale = 0.95;
 export const playButtonName = "playButton";
 export const playButtonLabel = "label";
 
@@ -458,7 +458,7 @@ export class YoutubeSelectionsController {
     			local: {
     				rotation: MRE.Quaternion.FromEulerAngles(0, -Math.PI, 0),
     				// scale: {x: 100.25, y: 100.25, z: 100.25},
-    				position: {z: -.05, y: -.35, x: 0.5}
+    				position: {z: -.05, y: -.35, x: 0}
     			}
     		}
     	}
@@ -485,7 +485,7 @@ export class YoutubeSelectionsController {
     			actor: {
     				name: `card-base-${videoStream.id}-root`,
     				parentId: base.id,
-    				transform: { local: { position: { x: .5} } },
+    				transform: { local: { position: { x: 0} } },
     				collider: {
     					geometry: {
     						shape: MRE.ColliderType.Auto
