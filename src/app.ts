@@ -177,7 +177,19 @@ export default class App implements MediaControlHandler {
 	private started = async () => {
 		console.log(this.context.sessionId, "App Started", this.parameterSet);
 		this.backgroundMesh = this.assets.createBoxMesh("main-background", 1, 0.68, 0.005);
-		this.backgroundMaterial = this.assets.createMaterial("main-material", {color: MRE.Color3.Black()});
+		// this.backgroundMaterial = this.assets.createMaterial("main-material", {color: MRE.Color3.Black()});
+		const tex = this.assets.createTexture(`texture-background`, {
+			uri: '/images/yt-background.png'
+		});
+
+		this.backgroundMaterial = this.assets.createMaterial(`main-material`, {
+			mainTextureId: tex.id,
+			emissiveTextureId: tex.id,
+			emissiveColor: MRE.Color3.White(),
+			// color: MRE.Color3.Red()
+
+		});
+
 		this.root = MRE.Actor.Create(this.context, {
 			actor: {
 				name: `yt-Root`,
@@ -199,7 +211,7 @@ export default class App implements MediaControlHandler {
 				name: `big-screen-video`,
 				transform: {
 					local: {
-						position: {z: -0.00375}
+						position: {z: -0.00325}
 					}
 				}
 			}
