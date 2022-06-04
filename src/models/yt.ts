@@ -1,9 +1,11 @@
 import * as MRE from '@microsoft/mixed-reality-extension-sdk';
+
 type Thumbnail = {
 	url: string;
 	width: number;
 	height: number;
 }
+
 export interface YouTubeVideoStream {
 	id: string;
 	videoStream?: MRE.VideoStream;
@@ -18,6 +20,7 @@ export interface YouTubeVideoStream {
 	author?: string;
 	live?: boolean;
 }
+
 export type YoutubeSearchResult = {
 	items: YoutubeSearchResultItem[];
 	// ne

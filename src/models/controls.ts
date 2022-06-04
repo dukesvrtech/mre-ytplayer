@@ -1,7 +1,14 @@
 import {MyScreenUser} from "./base";
 import {YouTubeVideoStream} from "./yt";
 
-export type MediaControlHandlerActions = 'onPlay' | 'onStop' | 'onRewind' | 'onFastForward' | 'onOpenMenu' | 'onCloseMenu';
+export type MediaControlHandlerActions =
+	'onPlay'
+	| 'onStop'
+	| 'onRewind'
+	| 'onFastForward'
+	| 'onOpenMenu'
+	| 'onCloseMenu';
+
 export interface MediaControlHandler {
 	onPlay: (user: MyScreenUser) => Promise<void>;
 	onStop: (user: MyScreenUser,) => Promise<void>;

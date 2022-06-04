@@ -6,7 +6,7 @@
 import * as MRE from '@microsoft/mixed-reality-extension-sdk';
 import * as Restify from 'restify';
 import dotenv from 'dotenv';
-import { resolve as resolvePath } from 'path';
+import {resolve as resolvePath} from 'path';
 import App from './app';
 
 // add some generic error handlers here, to log any exceptions we're not expecting
@@ -16,7 +16,7 @@ process.on('unhandledRejection', reason => console.log('unhandledRejection', rea
 // Read .env if file exists
 dotenv.config();
 
-const sayHello = async (req: Restify.Request, res: Restify.Response, next: Restify.Next) => {
+const sayHello = (req: Restify.Request, res: Restify.Response, next: Restify.Next) => {
 	console.log("Received Request", req.params);
 	res.send(`Hello ${req.params.path}`);
 	next();

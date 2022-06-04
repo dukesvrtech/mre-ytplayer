@@ -46,9 +46,7 @@ export type MyScreenContext = MRE.Context & {
 	progress?: Progress;
 	currentStreamIntervalInterval?: Timeout;
 }
-export type MyScreenUser = MRE.User & {
-
-};
+export type MyScreenUser = MRE.User & {};
 
 export type Progress = {
 	startTime: number;

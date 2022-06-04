@@ -11,7 +11,7 @@ import {MediaControlHandler} from "./models/controls";
 import {PlayerControls} from "./actors/player-controls";
 import {hmsToSecondsOnly} from "./utils";
 import {YoutubeSelectionsController} from "./actors/youtube-selections-controller";
-import { YouTubeVideoStream } from "./models/yt";
+import {YouTubeVideoStream} from "./models/yt";
 import * as process from "process";
 
 const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
@@ -21,7 +21,7 @@ const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
 	time: 0,
 })
 
-const getSeekDistance = () => process.env.SEEK_DISTANCE ? parseInt(process.env.SEEK_DISTANCE, 10) :  15;
+const getSeekDistance = () => process.env.SEEK_DISTANCE ? parseInt(process.env.SEEK_DISTANCE, 10) : 15;
 /**
  * The main class of this Index. All the logic goes here.
  */
@@ -73,7 +73,7 @@ export default class App implements MediaControlHandler {
 	}
 
 	onPlay = async (user: MRE.User) => {
-		const { state, soundOptions, currentVideoStream, videoActor } = this.context;
+		const {state, soundOptions, currentVideoStream, videoActor} = this.context;
 		if ((state === 'stopped' || !state) && currentVideoStream?.id) {
 			const ytVideo = await getVideoStreamFromYT(currentVideoStream?.id)
 			const videoStream = this.assets.createVideoStream(
@@ -95,7 +95,7 @@ export default class App implements MediaControlHandler {
 			this.mediaInstance = videoActor.startVideoStream(videoStream.id, soundOptions)
 			this.mediaVideoStream = videoStream;
 			clearInterval(this.context.currentStreamIntervalInterval);
-			this.context.currentStreamIntervalInterval = setInterval(async () => {
+			this.context.currentStreamIntervalInterval = setInterval(() => {
 				const remainingTime = this.getRemainingTime();
 				if (remainingTime > 0) {
 					this.context.progress.runningTime = this.getRunningTime();
@@ -115,27 +115,28 @@ export default class App implements MediaControlHandler {
 		this.context.state = "playing";
 	};
 
-    onStop = async (user: MRE.User) => {
-    	const { state } = this.context;
-    	if (this.mediaInstance) {
-    		if (state === "playing") {
+	// eslint-disable-next-line @typescript-eslint/require-await
+	onStop = async (user: MRE.User) => {
+		const {state} = this.context;
+		if (this.mediaInstance) {
+			if (state === "playing") {
 				clearInterval(this.context.currentStreamIntervalInterval)
 				console.log("Horce", this.context.soundOptions);
-    			this.mediaInstance.stop();
-    			this.context.state = 'stopped';
-    			// this.assets.
-    			this.mediaInstance = undefined;
+				this.mediaInstance.stop();
+				this.context.state = 'stopped';
+				// this.assets.
+				this.mediaInstance = undefined;
 				this.mediaVideoStream?.breakReference(this.context.videoActor)
-    		}
-    		// 	else if (state === 'playing') {
-    		// 		this.mediaInstance.pause();
-    		// 		console.log("Horace", "Pause");
-    		// 		this.context.state = 'paused'
-    		// 	}
-    	}
+			}
+			// 	else if (state === 'playing') {
+			// 		this.mediaInstance.pause();
+			// 		console.log("Horace", "Pause");
+			// 		this.context.state = 'paused'
+			// 	}
+		}
 
-    };
-    onRewind = async (user: MRE.User) => {
+	};
+	onRewind = async (user: MRE.User) => {
 		if (this.mediaInstance && this.context.currentVideoStream) {
 			await this.onStop(user);
 			const runningTime = this.getRunningTime() - getSeekDistance();
@@ -143,19 +144,20 @@ export default class App implements MediaControlHandler {
 			await this.onPlay(user);
 		}
 	};
-    onFastForward = async (user: MRE.User) => {
+	onFastForward = async (user: MRE.User) => {
 		if (this.mediaInstance && this.context.currentVideoStream && this.getRemainingTime() > getSeekDistance()) {
 			await this.onStop(user);
 			this.context.progress.runningTime += getSeekDistance();
 			await this.onPlay(user);
 		}
 	};
-    onOpenMenu = async (user: MRE.User) => {
-    	await this.selectionsController.displayMovieSelectionPicker(user, false)
-    };
-    onCloseMenu(user: MyScreenUser): Promise<void> {
-    	return Promise.resolve(undefined);
-    }
+	onOpenMenu = async (user: MRE.User) => {
+		await this.selectionsController.displayMovieSelectionPicker(user, false)
+	};
+
+	onCloseMenu(user: MyScreenUser): Promise<void> {
+		return Promise.resolve(undefined);
+	}
 
 	private handleUserJoined = async (user: MyScreenUser) => {
 		if (!this.initialized) {
@@ -171,7 +173,7 @@ export default class App implements MediaControlHandler {
 	};
 
 	private started = async () => {
-		console.log(this.context.sessionId, "App Started",this.parameterSet);
+		console.log(this.context.sessionId, "App Started", this.parameterSet);
 		this.backgroundMesh = this.assets.createBoxMesh("main-background", 1, 0.68, 0.005);
 		this.backgroundMaterial = this.assets.createMaterial("main-material", {color: MRE.Color3.Black()});
 		this.root = MRE.Actor.Create(this.context, {
@@ -195,7 +197,7 @@ export default class App implements MediaControlHandler {
 				name: `big-screen-video`,
 				transform: {
 					local: {
-						position: { z: -0.00375 }
+						position: {z: -0.00375}
 					}
 				}
 			}
@@ -204,7 +206,7 @@ export default class App implements MediaControlHandler {
 		// Initial for testing
 		this.context.soundOptions = getDefaultSoundOptions();
 		this.context.currentVideoStream = {
-			id: process.env.DEFAULT_YT_ID || '9gmykUdtUlo' // TODO:
+			id: process.env.DEFAULT_YT_ID || '9gmykUdtUlo'
 		}
 		this.context.videoActor = videoActor;
 		this.playerControls = new PlayerControls(this.context, this.assets, this);
