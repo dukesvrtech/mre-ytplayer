@@ -29,6 +29,7 @@ export class YoutubeSelectionsController {
     private displayCardsBase: MRE.Actor;
     private nextStreamMapping: Record<string, YouTubeVideoStream> = {};
     // private cardsBaseCache: Record<string, MRE.Actor> = {}
+	private imageButtonMesh: MRE.Mesh;
 
     constructor(
         private context: MyScreenContext,
@@ -204,6 +205,25 @@ export class YoutubeSelectionsController {
     		cardsBase.appearance.enabled = display;
     	}
     }
+
+	getImageButtonMaterial = (id: string, uri: string): MRE.Material => {
+		let material = null; // TODO: this.movieCardMaterials[syncVideoStream.id];
+		if (!material) {
+			const tex = this.assets.createTexture(`texture-${id}`, {
+				uri
+			});
+
+			material = this.assets.createMaterial(`material-${id}`, {
+				mainTextureId: tex.id,
+				emissiveTextureId: tex.id,
+				emissiveColor: MRE.Color3.Red(),
+				color: MRE.Color3.Red()
+
+			});
+		}
+		return material;
+	}
+
     closeMovieSelectionPicker = async () => {
     	if (this.context.ytSelectionPanel) {
     		try {
@@ -244,6 +264,7 @@ export class YoutubeSelectionsController {
     		this.context.ytSelectionsPager.numberPages = Math.ceil(this.context.ytSelectionsPager.totalCount / pageSize)
     	}
     	this.context.ytSelectionPanel = this.getBase();
+		this.imageButtonMesh = this.assets.createPlaneMesh(`plane-movie-card-mesh`, 0.075, 0.075);
     	this.controlActor = MRE.Actor.Create(this.context, {
     		actor: {
     			// exclusiveToUser: id,
@@ -273,10 +294,11 @@ export class YoutubeSelectionsController {
     	//     playButton: nextPageButton,
     	//     root: nextPageRoot
     	// } = this.getMediaControlButton("next-page-button", "artifact:1949940424256782460", this.controlActor);
+		const lCloseBtnMat = this.getImageButtonMaterial('stop', '/images/Close-Circle.png');
     	const {
     		playButton: closeButton,
     		root: closeRoot
-    	} = this.getMediaControlButton2("close-button", "artifact:1960630789846598128", this.controlActor);
+    	} = this.getMediaControlButton3("close-button",  this.controlActor, this.imageButtonMesh, lCloseBtnMat);
     	const width = .14;
     	const controlLayout = new MRE.PlanarGridLayout(this.controlActor);
     	// prevPageRoot.appearance.enabled = false;
@@ -576,53 +598,34 @@ export class YoutubeSelectionsController {
     	return {base, playButton, videoStream };
     };
 
-    getMediaControlButton2(prefix: string, resourceId: string, parentActor: MRE.Actor, arrowScale = 0.2) {
-    	const root = MRE.Actor.Create(this.context, {
-    		actor: {
-    			name: `base-button-${prefix}-Root`,
-    			parentId: parentActor.id,
-    			appearance: {enabled: true},
-    		}
-    	});
-
-    	// const sbsScale = 0.04;
-    	const lib = MRE.Actor.CreateFromLibrary(this.context, {
-    		resourceId,
-    		actor: {
-    			parentId: root.id,
-    			name: `${prefix}`,
-    			// exclusiveToUser: id,
-    			appearance: {enabled: true,},
-    			// grabbable: true,
-    			collider: {geometry: {shape: MRE.ColliderType.Auto},},
-    			transform: {
-    				local: {
-    					// position: { z: -1},
-    					rotation: MRE.Quaternion.FromEulerAngles(Math.PI * .5,0, Math.PI * 0),
-    					scale: {x: arrowScale, y: .08, z: arrowScale},
-    				}
-    			}
-    		}
-    	});
-    	const playButton = MRE.Actor.Create(this.context, {
-    		actor: {
-    			name: `mc2-playbutton`,
-    			parentId: root.id,
-    			appearance: {
-    				meshId: this.backButtonMesh.id,
-    				materialId: this.backButtonMaterial.id,
-    				enabled: true,
-    				// enabled: this.groupMask
-    			},
-    			collider: {geometry: {shape: MRE.ColliderType.Auto}},
-    			transform: {
-    				local: {
-    					rotation: MRE.Quaternion.FromEulerAngles(0, 0, Math.PI * 0.5),
-    					position: {z: 0.02}
-    				}
-    			}
-    		}
-    	});
-    	return {playButton, root};
-    }
+	getMediaControlButton3(prefix: string, parentActor: MRE.Actor, mesh: MRE.Mesh, mat: MRE.Material) {
+		const root = MRE.Actor.Create(this.context, {
+			actor: {
+				name: `base-button-${prefix}-Root`,
+				parentId: parentActor.id,
+				appearance: {enabled: true},
+				grabbable: true,
+			}
+		});
+		const playButton = MRE.Actor.Create(this.context, {
+			actor: {
+				name: `mc-playbutton-${prefix}`,
+				parentId: root.id,
+				appearance: {
+					meshId: mesh.id,
+					materialId: mat.id,
+					enabled: true,
+					// enabled: this.groupMask
+				},
+				collider: {geometry: {shape: MRE.ColliderType.Auto}},
+				transform: {
+					local: {
+						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+						position: {z: 0.02}
+					}
+				}
+			}
+		});
+		return {playButton, root};
+	}
 }

@@ -48,56 +48,6 @@ export class PlayerControls {
 		return material;
 	}
 
-    getMediaControlButton2(prefix: string, parentActor: MRE.Actor, mesh: MRE.Mesh, mat: MRE.Material) {
-    	const root = MRE.Actor.Create(this.context, {
-    		actor: {
-    			name: `base-button-${prefix}-Root`,
-    			parentId: parentActor.id,
-    			appearance: {enabled: true},
-    			grabbable: true,
-    		}
-    	});
-		const playButton = MRE.Actor.Create(this.context, {
-			actor: {
-				name: `mc-playbutton-${prefix}`,
-				parentId: root.id,
-				appearance: {
-					meshId: mesh.id,
-					materialId: mat.id,
-					enabled: true,
-					// enabled: this.groupMask
-				},
-				collider: {geometry: {shape: MRE.ColliderType.Auto}},
-				transform: {
-					local: {
-						rotation: MRE.Quaternion.FromEulerAngles(0, 0, Math.PI * 0.5),
-						position: {z: 0.02}
-					}
-				}
-			}
-		});
-
-		// const playButton = MRE.Actor.Create(this.context, {
-    	// 	actor: {
-    	// 		name: `mc-playbutton-${prefix}`,
-    	// 		parentId: root.id,
-    	// 		appearance: {
-    	// 			meshId: mesh.id,
-    	// 			materialId: mat.id,
-    	// 			enabled: true,
-    	// 			// enabled: this.groupMask
-    	// 		},
-    	// 		collider: {geometry: {shape: MRE.ColliderType.Auto}},
-    	// 		transform: {
-    	// 			local: {
-    	// 				rotation: MRE.Quaternion.FromEulerAngles(0, 0, Math.PI * 0.5),
-    	// 				position: {z: 0.02}
-    	// 			}
-    	// 		}
-    	// 	}
-    	// });
-    	return {playButton, root};
-    }
 	getMediaControlButton3(prefix: string, parentActor: MRE.Actor, mesh: MRE.Mesh, mat: MRE.Material) {
 		const root = MRE.Actor.Create(this.context, {
 			actor: {
@@ -126,26 +76,6 @@ export class PlayerControls {
 				}
 			}
 		});
-
-		// const playButton = MRE.Actor.Create(this.context, {
-		// 	actor: {
-		// 		name: `mc-playbutton-${prefix}`,
-		// 		parentId: root.id,
-		// 		appearance: {
-		// 			meshId: mesh.id,
-		// 			materialId: mat.id,
-		// 			enabled: true,
-		// 			// enabled: this.groupMask
-		// 		},
-		// 		collider: {geometry: {shape: MRE.ColliderType.Auto}},
-		// 		transform: {
-		// 			local: {
-		// 				rotation: MRE.Quaternion.FromEulerAngles(0, 0, Math.PI * 0.5),
-		// 				position: {z: 0.02}
-		// 			}
-		// 		}
-		// 	}
-		// });
 		return {playButton, root};
 	}
 
