@@ -4,27 +4,49 @@ import {secondsToString} from "../utils";
 import wordWrap from "word-wrap";
 import {MyScreenContext, MyScreenUser} from "../models/base";
 import {MediaControlHandler, MediaControlHandlerActions} from "../models/controls";
+import {YouTubeVideoStream} from "../models/yt";
 
 export class PlayerControls {
 
     playButtonMesh: MRE.Mesh;
-    buttonMaterials: {
-        hover: MRE.Material;
-        default: MRE.Material;
-        active: MRE.Material;
-    }
-    stopButtonMesh: MRE.Mesh;
+	imageButtonMesh: MRE.Mesh;
+
+	// buttonMaterials: {
+    //     hover: MRE.Material;
+    //     default: MRE.Material;
+    //     active: MRE.Material;
+    // }
+    // stopButtonMesh: MRE.Mesh;
 
     constructor(private context: MyScreenContext, private assets: MRE.AssetContainer, private mediaControlHandler: MediaControlHandler) {
     	this.playButtonMesh = assets.createCylinderMesh('arrow', 0.005, 0.08, 'z', 3);
+		this.imageButtonMesh = assets.createPlaneMesh(`plane-movie-card-mesh`, 0.075, 0.075);
     	const material = assets.createMaterial("mat", {color: MRE.Color3.Red()});
-    	this.stopButtonMesh = assets.createBoxMesh("box", 0.12, 0.12, 0.005);
-    	this.buttonMaterials = {
-    		hover: assets.createMaterial("mat", {color: MRE.Color3.Red()}),
-    		default: material,
-    		active: material,
-    	}
+    	// this.stopButtonMesh = assets.createBoxMesh("box", 0.12, 0.12, 0.005);
+    	// this.buttonMaterials = {
+    	// 	hover: assets.createMaterial("mat", {color: MRE.Color3.Red()}),
+    	// 	default: material,
+    	// 	active: material,
+    	// }
     }
+
+	getImageButtonMaterial = (id: string, uri: string): MRE.Material => {
+		let material = null; // TODO: this.movieCardMaterials[syncVideoStream.id];
+		if (!material) {
+			const tex = this.assets.createTexture(`texture-${id}`, {
+				uri
+			});
+
+			material = this.assets.createMaterial(`material-${id}`, {
+				mainTextureId: tex.id,
+				emissiveTextureId: tex.id,
+				emissiveColor: MRE.Color3.Red(),
+				color: MRE.Color3.Red()
+
+			});
+		}
+		return material;
+	}
 
     getMediaControlButton2(prefix: string, parentActor: MRE.Actor, mesh: MRE.Mesh, mat: MRE.Material) {
     	const root = MRE.Actor.Create(this.context, {
@@ -35,27 +57,97 @@ export class PlayerControls {
     			grabbable: true,
     		}
     	});
-    	const playButton = MRE.Actor.Create(this.context, {
-    		actor: {
-    			name: `mc-playbutton-${prefix}`,
-    			parentId: root.id,
-    			appearance: {
-    				meshId: mesh.id,
-    				materialId: mat.id,
-    				enabled: true,
-    				// enabled: this.groupMask
-    			},
-    			collider: {geometry: {shape: MRE.ColliderType.Auto}},
-    			transform: {
-    				local: {
-    					rotation: MRE.Quaternion.FromEulerAngles(0, 0, Math.PI * 0.5),
-    					position: {z: 0.02}
-    				}
-    			}
-    		}
-    	});
+		const playButton = MRE.Actor.Create(this.context, {
+			actor: {
+				name: `mc-playbutton-${prefix}`,
+				parentId: root.id,
+				appearance: {
+					meshId: mesh.id,
+					materialId: mat.id,
+					enabled: true,
+					// enabled: this.groupMask
+				},
+				collider: {geometry: {shape: MRE.ColliderType.Auto}},
+				transform: {
+					local: {
+						rotation: MRE.Quaternion.FromEulerAngles(0, 0, Math.PI * 0.5),
+						position: {z: 0.02}
+					}
+				}
+			}
+		});
+
+		// const playButton = MRE.Actor.Create(this.context, {
+    	// 	actor: {
+    	// 		name: `mc-playbutton-${prefix}`,
+    	// 		parentId: root.id,
+    	// 		appearance: {
+    	// 			meshId: mesh.id,
+    	// 			materialId: mat.id,
+    	// 			enabled: true,
+    	// 			// enabled: this.groupMask
+    	// 		},
+    	// 		collider: {geometry: {shape: MRE.ColliderType.Auto}},
+    	// 		transform: {
+    	// 			local: {
+    	// 				rotation: MRE.Quaternion.FromEulerAngles(0, 0, Math.PI * 0.5),
+    	// 				position: {z: 0.02}
+    	// 			}
+    	// 		}
+    	// 	}
+    	// });
     	return {playButton, root};
     }
+	getMediaControlButton3(prefix: string, parentActor: MRE.Actor, mesh: MRE.Mesh, mat: MRE.Material) {
+		const root = MRE.Actor.Create(this.context, {
+			actor: {
+				name: `base-button-${prefix}-Root`,
+				parentId: parentActor.id,
+				appearance: {enabled: true},
+				grabbable: true,
+			}
+		});
+		const playButton = MRE.Actor.Create(this.context, {
+			actor: {
+				name: `mc-playbutton-${prefix}`,
+				parentId: root.id,
+				appearance: {
+					meshId: mesh.id,
+					materialId: mat.id,
+					enabled: true,
+					// enabled: this.groupMask
+				},
+				collider: {geometry: {shape: MRE.ColliderType.Auto}},
+				transform: {
+					local: {
+						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+						position: {z: 0.02}
+					}
+				}
+			}
+		});
+
+		// const playButton = MRE.Actor.Create(this.context, {
+		// 	actor: {
+		// 		name: `mc-playbutton-${prefix}`,
+		// 		parentId: root.id,
+		// 		appearance: {
+		// 			meshId: mesh.id,
+		// 			materialId: mat.id,
+		// 			enabled: true,
+		// 			// enabled: this.groupMask
+		// 		},
+		// 		collider: {geometry: {shape: MRE.ColliderType.Auto}},
+		// 		transform: {
+		// 			local: {
+		// 				rotation: MRE.Quaternion.FromEulerAngles(0, 0, Math.PI * 0.5),
+		// 				position: {z: 0.02}
+		// 			}
+		// 		}
+		// 	}
+		// });
+		return {playButton, root};
+	}
 
     createSelectionTitlePanel(parent: MRE.Actor) {
     	const scaleDown = 0.7;
@@ -65,7 +157,7 @@ export class PlayerControls {
     			parentId: parent.id,
     			transform: {
     				local: {
-    					position: {z: 0, y: -0.31, x: -.48},
+    					position: {z: -.00265, y: -0.3, x: -.48},
     					// rotation: {y: 45},
     					scale: {x: scaleDown, y: scaleDown, z: scaleDown}
     				}
@@ -91,7 +183,7 @@ export class PlayerControls {
     			parentId: parent.id,
     			transform: {
     				local: {
-    					position: {z: 0, y: -0.31, x: -.48},
+    					position: {z: -.00265, y: -0.325, x: -.48},
     					// position: {z: -2.17, y: -10.4, x: timeModeLeft},
     					// rotation: {y: 45},
     					// scale: {x: 20.0, y: 20.0, z: 20.0}
@@ -100,7 +192,7 @@ export class PlayerControls {
     			text: {
     				contents: "00:00:00",
     				pixelsPerLine: 12,
-    				height: 0.02,
+    				height: 0.0175,
     				anchor: MRE.TextAnchorLocation.MiddleLeft,
     				justify: TextJustify.Left,
     				color: MRE.Color3.DarkGray(),
@@ -122,7 +214,7 @@ export class PlayerControls {
                             .replace(/[^\x20-\x7E]/g, "")
                             .substring(0, 55) + (title.length > 55 ? '...' : '')
     				this.context.selectionTitlePanel.text.contents = wordWrap(displayText, {
-    					width: 35,
+    					width: 60,
     					trim: true,
     					indent: "",
     					cut: false,
@@ -138,7 +230,7 @@ export class PlayerControls {
     				transform: {
     					local: {
     						position: {
-    							y: -0.3, z: 0, x: 0.475,
+    							y: -0.29, z: -.01250, x: 0.5,
     						},
     						scale: {
     							x: controlScale, y: controlScale, z: controlScale,
@@ -147,34 +239,41 @@ export class PlayerControls {
     				}
     			}
     		});
+			const lPlayBtnMat = this.getImageButtonMaterial('play', '/images/Play.png');
+			const lStopBtnMat = this.getImageButtonMaterial('stop', '/images/Stop.png');
+			const lMenuBtnMat = this.getImageButtonMaterial('stop', '/images/Cog.png');
+			const lRewindBtnMat = this.getImageButtonMaterial('stop', '/images/Backward-15s.png');
+			const lFwdBtnMat = this.getImageButtonMaterial('stop', '/images/Forward-15s.png');
+
+			// const lPlyBtnMesh = this.imageButtonMesh;
 
     		const {
     			playButton: menuButton,
     			root: menuRoot
-    		} = this.getMediaControlButton2("stop-button", controlActor, this.stopButtonMesh, this.buttonMaterials.default);
+    		} = this.getMediaControlButton3("menu-button", controlActor, this.imageButtonMesh, lMenuBtnMat);
     		const {
     			playButton,
     			root: playRoot
-    		} = this.getMediaControlButton2("play-button", controlActor, this.playButtonMesh, this.buttonMaterials.default);
+    		} = this.getMediaControlButton3("play-button", controlActor, this.imageButtonMesh, lPlayBtnMat);
     		const {
     			playButton: stopButton,
     			root: stopRoot
-    		} = this.getMediaControlButton2("stop-button", controlActor, this.stopButtonMesh, this.buttonMaterials.default);
+    		} = this.getMediaControlButton3("stop-button", controlActor, this.imageButtonMesh, lStopBtnMat);
     		const {
     			playButton: rewindButton,
     			root: rewindRoot
-    		} = this.getMediaControlButton2("rewind-button", controlActor, this.playButtonMesh, this.buttonMaterials.default);
+    		} = this.getMediaControlButton3("rewind-button", controlActor, this.imageButtonMesh, lRewindBtnMat);
     		const {
     			playButton: fastFordButton,
     			root: fastForRoot
-    		} = this.getMediaControlButton2("fast-forward-button", controlActor, this.playButtonMesh, this.buttonMaterials.default);
+    		} = this.getMediaControlButton3("fast-forward-button", controlActor, this.imageButtonMesh, lFwdBtnMat);
     		const layout = new MRE.PlanarGridLayout(controlActor, BoxAlignment.BottomLeft);
     		this.context.menuButton = menuButton;
     		this.context.playButton = playButton;
     		this.context.stopButton = stopButton;
     		this.context.rewindButton = rewindButton;
     		this.context.fastFwdButton = fastFordButton;
-    		const width = .14;
+    		const width = .11;
     		let col = 0;
     		this.context.remainingTimeLabel = this.createRemainingTimePanel(parentActor);
     		this.context.updateRemainingTime = (val: number) => {
@@ -186,14 +285,14 @@ export class PlayerControls {
     			row: 0, column: col++, width, height: 0.1, contents: menuRoot,
     		})
     		layout.addCell({
-    			row: 0, column: col++, width, height: 0.1, contents: rewindRoot,
-    		})
-    		layout.addCell({
     			row: 0, column: col++, width, height: 0.1, contents: stopRoot
     		})
     		layout.addCell({
     			row: 0, column: col++, width, height: 0.1, contents: playRoot,
     		})
+			layout.addCell({
+				row: 0, column: col++, width, height: 0.1, contents: rewindRoot,
+			})
     		layout.addCell({
     			row: 0, column: col++, width, height: 0.1, contents: fastForRoot
     		})

@@ -8,7 +8,7 @@ import {MediaControlHandler} from "../models/controls";
 import {getVideoStreamFromSearch} from "../services/yt-service";
 
 const pageSize = 18;
-const chooserScale = 2;
+const chooserScale = 1;
 export const playButtonName = "playButton";
 export const playButtonLabel = "label";
 
@@ -27,7 +27,7 @@ export class YoutubeSelectionsController {
 
     // private movieCardMaterials: Record<string, MRE.Material> = {};
     private displayCardsBase: MRE.Actor;
-    private nextStreamMapping: Record<string, string> = {};
+    private nextStreamMapping: Record<string, YouTubeVideoStream> = {};
     // private cardsBaseCache: Record<string, MRE.Actor> = {}
 
     constructor(
@@ -145,12 +145,12 @@ export class YoutubeSelectionsController {
     			let row = 0;
     			this.nextStreamMapping = {};
     			let prev: string;
-    			let first: string;
+    			let first: YouTubeVideoStream;
     			for (const stream of streams) {
     				if (!prev) {
-    					first = stream.id;
+    					first = stream;
     				} else {
-    					this.nextStreamMapping[prev] = stream.id
+    					this.nextStreamMapping[prev] = stream
     				}
     				prev = stream.id
     				const card = await this.createVideoCard(cardsBase, stream, i);
@@ -181,7 +181,7 @@ export class YoutubeSelectionsController {
     					parentId: this.context.ytSelectionPanel.id,
     					transform: {
     						local: {
-    							position: {z: .01, y: .5, x: .5},
+    							position: {z: .01, y: 0, x: 0},
     							rotation: MRE.Quaternion.FromEulerAngles(0, -Math.PI, 0),
     							scale: {x: 1, y: 1, z: 1}
     						}
@@ -253,7 +253,7 @@ export class YoutubeSelectionsController {
     			transform: {
     				local: {
     					position: {
-    						y: -.07, x: .5
+    						y: 0, x: 0
     						// z: -2.2, x: 12.5,
     					},
     					rotation: MRE.Quaternion.FromEulerAngles(0, -Math.PI, 0),
@@ -415,7 +415,7 @@ export class YoutubeSelectionsController {
     		transform: {
     			local: {
     				scale: {x: chooserScale, y: chooserScale, z: chooserScale},
-    				position: {x: -.45, y: -0.05}
+    				position: {x: 0, y: 0}
     			}
     		}
     	}
@@ -436,7 +436,7 @@ export class YoutubeSelectionsController {
     			local: {
     				rotation: MRE.Quaternion.FromEulerAngles(0, -Math.PI, 0),
     				// scale: {x: 100.25, y: 100.25, z: 100.25},
-    				position: {z: 0, y: 0, x: 0.5}
+    				position: {z: -.05, y: -.35, x: 0.5}
     			}
     		}
     	}

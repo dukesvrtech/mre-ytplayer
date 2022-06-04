@@ -18,6 +18,7 @@ const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
 	volume: 0.45,
 	spread: 0.0,
 	rolloffStartDistance: 50,
+	time: 0,
 })
 /**
  * The main class of this Index. All the logic goes here.
@@ -30,12 +31,14 @@ export default class App implements MediaControlHandler {
 	private mediaVideoStream: MRE.VideoStream;
 	private playerControls: PlayerControls;
 	private selectionsController: YoutubeSelectionsController;
+	private backgroundMesh: MRE.Mesh;
+	private backgroundMaterial: MRE.Material;
 
 	constructor(private context: MyScreenContext, private parameterSet: MRE.ParameterSet) {
 		console.log(this.context.sessionId, "constructed");
-		this.context.conn.on('send', (message, serializedMessage) => {
-			console.log("Horace.message", message, serializedMessage)
-		})
+		// this.context.conn.on('send', (message, serializedMessage) => {
+		// 	console.log("Horace.message", message, serializedMessage)
+		// })
 		this.assets = new MRE.AssetContainer(context);
 		this.context.onStarted(() => this.started());
 		this.context.onStopped(this.stopped);
@@ -48,8 +51,24 @@ export default class App implements MediaControlHandler {
 			await this.onStop(user)
 		}
 		this.context.currentVideoStream = stream
+		this.context.soundOptions = getDefaultSoundOptions();
+		this.context.progress = undefined;
 		await this.onPlay(user);
 	};
+	getRunningTime = () => {
+		if (this.context.progress) {
+			const delta = Date.now() - this.context.progress.startTime;
+			return Math.round(delta >= 0 ? delta : 0) / 1000;
+		}
+		return 0;
+	}
+	getRemainingTime = () => {
+		if (this.context.currentVideoStream) {
+			const runningTime = this.getRunningTime();
+			return hmsToSecondsOnly(this.context.currentVideoStream.duration) - runningTime;
+		}
+		return 0;
+	}
 
 	onPlay = async (user: MRE.User) => {
 		const { state, soundOptions, currentVideoStream, videoActor } = this.context;
@@ -61,11 +80,33 @@ export default class App implements MediaControlHandler {
 					uri: ytVideo.uri
 				}
 			);
+			console.log("Horace.sound options", soundOptions)
+			this.context.progress = this.context.progress || {
+				runningTime: 0,
+				startTime: 0,
+			}
+			this.context.progress.startTime = Date.now() - this.context.progress.runningTime * 1000;
+			this.context.soundOptions.time = this.context.progress.runningTime;
 			this.context.currentVideoStream = ytVideo;
 			this.context.updatePlayerTitle(ytVideo.title);
-			this.context.updateRemainingTime(hmsToSecondsOnly(ytVideo.duration))
+			this.context.updateRemainingTime(this.getRemainingTime())
 			this.mediaInstance = videoActor.startVideoStream(videoStream.id, soundOptions)
 			this.mediaVideoStream = videoStream;
+			clearInterval(this.context.currentStreamIntervalInterval);
+			this.context.currentStreamIntervalInterval = setInterval(async () => {
+				const remainingTime = this.getRemainingTime();
+				if (remainingTime > 0) {
+					this.context.progress.runningTime = this.getRunningTime();
+					this.context.updateRemainingTime(remainingTime);
+				} else {
+					clearInterval(this.context.currentStreamIntervalInterval);
+					const nextStream = this.selectionsController.getNextStream(this.context.currentVideoStream.id);
+					if (nextStream) {
+						this.handlePlayButtonClick(user, nextStream)
+					}
+				}
+			}, 5000);
+
 		} else if (state === "paused") {
 			this.mediaInstance.resume();
 		}
@@ -76,6 +117,8 @@ export default class App implements MediaControlHandler {
     	const { state } = this.context;
     	if (this.mediaInstance) {
     		if (state === "playing") {
+				clearInterval(this.context.currentStreamIntervalInterval)
+				console.log("Horce", this.context.soundOptions);
     			this.mediaInstance.stop();
     			this.context.state = 'stopped';
     			// this.assets.
@@ -114,9 +157,15 @@ export default class App implements MediaControlHandler {
 
 	private started = async () => {
 		console.log(this.context.sessionId, "App Started",this.parameterSet);
+		this.backgroundMesh = this.assets.createBoxMesh("main-background", 1, 0.68, 0.005);
+		this.backgroundMaterial = this.assets.createMaterial("main-material", {color: MRE.Color3.Black()});
 		this.root = MRE.Actor.Create(this.context, {
 			actor: {
-				name: `yt-bigscreen-Root`,
+				name: `yt-Root`,
+				appearance: {
+					materialId: this.backgroundMaterial.id,
+					meshId: this.backgroundMesh.id
+				},
 				transform: {
 					local: {
 						// scale: {x: scaleFactor, y: scaleFactor, z: scaleFactor}
@@ -129,6 +178,11 @@ export default class App implements MediaControlHandler {
 			actor: {
 				parentId: this.root.id,
 				name: `big-screen-video`,
+				transform: {
+					local: {
+						position: { z: -0.00375 }
+					}
+				}
 			}
 		});
 		await this.root.created();

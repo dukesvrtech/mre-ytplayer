@@ -1,3 +1,4 @@
+import Timeout = NodeJS.Timeout;
 import * as MRE from "@microsoft/mixed-reality-extension-sdk";
 import {YouTubeVideoStream} from "./yt";
 
@@ -42,7 +43,14 @@ export type MyScreenContext = MRE.Context & {
 	ytPagerButtons?: {
 		closeButton: MRE.Actor;
 	};
+	progress?: Progress;
+	currentStreamIntervalInterval?: Timeout;
 }
 export type MyScreenUser = MRE.User & {
 
 };
+
+export type Progress = {
+	startTime: number;
+	runningTime: number;
+}
