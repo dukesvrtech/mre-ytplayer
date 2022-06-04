@@ -20,6 +20,8 @@ const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
 	rolloffStartDistance: 50,
 	time: 0,
 })
+
+const getSeekDistance = () => process.env.SEEK_DISTANCE ? parseInt(process.env.SEEK_DISTANCE, 10) :  15;
 /**
  * The main class of this Index. All the logic goes here.
  */
@@ -133,8 +135,21 @@ export default class App implements MediaControlHandler {
     	}
 
     };
-    onRewind: (user: MRE.User) => Promise<void>;
-    onFastForward: (user: MRE.User) => Promise<void>;
+    onRewind = async (user: MRE.User) => {
+		if (this.mediaInstance && this.context.currentVideoStream) {
+			await this.onStop(user);
+			const runningTime = this.getRunningTime() - getSeekDistance();
+			this.context.progress.runningTime = runningTime >= 0 ? runningTime : 0;
+			await this.onPlay(user);
+		}
+	};
+    onFastForward = async (user: MRE.User) => {
+		if (this.mediaInstance && this.context.currentVideoStream && this.getRemainingTime() > getSeekDistance()) {
+			await this.onStop(user);
+			this.context.progress.runningTime += getSeekDistance();
+			await this.onPlay(user);
+		}
+	};
     onOpenMenu = async (user: MRE.User) => {
     	await this.selectionsController.displayMovieSelectionPicker(user, false)
     };
