@@ -21,13 +21,6 @@ import {
 	LABEL_SELECTION_TITLE
 } from "./constants";
 
-const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
-	volume: 0.5,
-	spread: 0.25,
-	rolloffStartDistance: 5,
-	time: 0,
-})
-
 const getSeekDistance = () => process.env.SEEK_DISTANCE ? parseInt(process.env.SEEK_DISTANCE, 10) : 15;
 
 const getMaxRolloffDistance = () => parseInt(process.env.MAX_ROLLOFF_DISTANCE, 10) || 250;
@@ -58,13 +51,35 @@ export default class App implements MediaControlHandler {
 		this.context.onUserJoined(async (user) => await this.handleUserJoined(user));
 	}
 
+	getDefaultSoundOptions = (): MRE.SetVideoStateOptions => {
+		let volume = 0.5;
+		if (this.parameterSet['v']) {
+			const val = parseInt(this.parameterSet['v'] as string);
+			if (!Number.isNaN(val)) {
+				volume = val / 100;
+			}
+		}
+		let rolloffStartDistance = 5.0;
+		if (this.parameterSet['ro']) {
+			const val = parseFloat(this.parameterSet['ro'] as string) ;
+				if (!Number.isNaN(val)) {
+					rolloffStartDistance = val;
+				}
+		}
+		return ({
+			volume,
+			spread: 0.25,
+			rolloffStartDistance,
+			time: 0,
+		})
+	}
 	handlePlayButtonClick = async (user: MyScreenUser, stream: YouTubeVideoStream) => {
 		if (this.context.state !== 'stopped' && this.mediaInstance) {
 			await this.onStop(user)
 		}
 		this.context.currentVideoStream = stream
 		const currentSoundOptions = this.context.soundOptions;
-		this.context.soundOptions = getDefaultSoundOptions();
+		this.context.soundOptions = this.getDefaultSoundOptions();
 		if (currentSoundOptions?.volume) {
 			this.context.soundOptions.volume = currentSoundOptions.volume;
 		}
@@ -237,7 +252,7 @@ export default class App implements MediaControlHandler {
 		});
 		await this.root.created();
 		// Initial for testing
-		this.context.soundOptions = getDefaultSoundOptions();
+		this.context.soundOptions = this.getDefaultSoundOptions();
 		this.context.currentVideoStream = {
 			id: process.env.DEFAULT_YT_ID || '9gmykUdtUlo'
 		}
