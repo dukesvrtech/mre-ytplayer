@@ -6,6 +6,7 @@ import {MyScreenContext, MyScreenUser} from "../models/base";
 import {MediaControlHandler, MediaControlHandlerActions} from "../models/controls";
 import {debounce} from "debounce";
 
+const commonDepth = -0.0015
 export class PlayerControls {
 
 	playButtonMesh: MRE.Mesh;
@@ -78,7 +79,7 @@ export class PlayerControls {
 				parentId: parent.id,
 				transform: {
 					local: {
-						position: {z: -.00265, y: -0.3, x: -.48},
+						position: {z: commonDepth, y: -0.3, x: -.48},
 						// rotation: {y: 45},
 						scale: {x: scaleDown, y: scaleDown, z: scaleDown}
 					}
@@ -104,7 +105,7 @@ export class PlayerControls {
 				parentId: parent.id,
 				transform: {
 					local: {
-						position: {z: -.00265, y: -0.325, x: -.48},
+						position: {z: commonDepth, y: -0.325, x: -.48},
 						// position: {z: -2.17, y: -10.4, x: timeModeLeft},
 						// rotation: {y: 45},
 						// scale: {x: 20.0, y: 20.0, z: 20.0}
@@ -124,7 +125,7 @@ export class PlayerControls {
 		return label;
 	}
 
-	createUserControls(parentActor: MRE.Actor) {
+	createMediaControls(parentActor: MRE.Actor) {
 		if (!this.context.playerControls) {
 			this.context.selectionTitlePanel = this.createSelectionTitlePanel(parentActor);
 			this.context.updatePlayerTitle = (title = '') => {
@@ -146,6 +147,12 @@ export class PlayerControls {
 			this.context.volumeDownButton = volumeUpButton;
 			this.context.volumeUpButton = volumeDownButton;
 			this.context.volumeLabel = volumeLabel;
+
+			const { rolloffDistanceLabel, rolloffDownButton, rolloffUpButton } = this.setupRolloffControls(parentActor);
+			this.context.rolloffDistanceLabel = rolloffDistanceLabel;
+			this.context.rolloffUpButton = rolloffUpButton;
+			this.context.rolloffDownButton = rolloffDownButton;
+
 			const controlScale = 0.45;
 			const controlActor = MRE.Actor.Create(this.context, {
 				actor: {
@@ -155,7 +162,7 @@ export class PlayerControls {
 					transform: {
 						local: {
 							position: {
-								y: -0.29, z: -.01250, x: 0.5,
+								y: -0.29, z: -.0108, x: 0.5,
 							},
 							scale: {
 								x: controlScale, y: controlScale, z: controlScale,
@@ -238,7 +245,7 @@ export class PlayerControls {
 				grabbable: true,
 				transform: {
 					local: {
-						position: { z: -0.01, y: 0.31, x: 0.375},
+						position: { z: commonDepth, y: 0.31, x: 0.375},
 						scale: { x: volScale, y: volScale, z: volScale }
 
 					}
@@ -322,6 +329,104 @@ export class PlayerControls {
 		layout.applyLayout()
 		return { volumeUpButton, volumeDownButton, volumeLabel }
 	}
+
+	setupRolloffControls = (parent: MRE.Actor) => {
+		const rolloffDownMat = this.getImageButtonMaterial('play', '/images/Fast-Backward.png');
+		const rolloffUpMat = this.getImageButtonMaterial('stop', '/images/Fast-Forward.png');
+		const rolloffScale = .6;
+		const root = MRE.Actor.Create(this.context, {
+			actor: {
+				name: `base-rolloff-Root`,
+				parentId: parent.id,
+				appearance: {enabled: true},
+				grabbable: true,
+				transform: {
+					local: {
+						position: { z: commonDepth, y: 0.31, x: 0.175},
+						scale: { x: rolloffScale, y: rolloffScale, z: rolloffScale }
+
+					}
+				}
+			}
+		});
+		const layout = new MRE.PlanarGridLayout(root);
+		const cw = 0.065, ch = 0.1;
+		const arrowScale = 0.60;
+		let rolloffDistanceLabel: MRE.Actor, rolloffUpButton: MRE.Actor, rolloffDownButton: MRE.Actor;
+		layout.addCell({
+			row: 0,
+			column: 2,
+			width: cw / 4,
+			height: ch,
+			// alignment: BoxAlignment.MiddleCenter,
+			contents: rolloffDistanceLabel = MRE.Actor.Create(this.context, {
+				actor: {
+					name: `volume-label`,
+					parentId: root.id,
+					// appearance: { enabled: this.groupMask },
+					text: {
+						contents: `test`,
+						height: 0.0225,
+						anchor: MRE.TextAnchorLocation.MiddleLeft,
+						justify: MRE.TextJustify.Left,
+						color: MRE.Color3.DarkGray(),
+					}
+				}
+			})
+		});
+
+		layout.addCell({
+			row: 0,
+			column: 0,
+			width: cw,
+			height: ch,
+			// alignment: BoxAlignment.MiddleCenter,
+			contents: rolloffDownButton = MRE.Actor.Create(this.context, {
+				actor: {
+					name: `volumen-down`,
+					parentId: root.id,
+					appearance: {
+						meshId:  this.imageButtonMesh.id,
+						materialId: rolloffDownMat.id
+						// enabled: this.groupMask
+					},
+					collider: {geometry: {shape: MRE.ColliderType.Auto}},
+					transform: {local: {
+						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+					}
+					}
+				}
+			})
+		});
+
+		layout.addCell({
+			row: 0,
+			column: 1,
+			width: cw,
+			height: ch,
+			// alignment: BoxAlignment.MiddleCenter,
+			contents: rolloffUpButton = MRE.Actor.Create(this.context, {
+				actor: {
+					name: `volumen-up`,
+					parentId: root.id,
+					appearance: {
+						meshId:  this.imageButtonMesh.id,
+						materialId: rolloffUpMat.id
+					},
+					collider: {geometry: {shape: MRE.ColliderType.Auto}},
+					transform: {local: {
+						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+					}
+					}
+				}
+			})
+		});
+		layout.applyLayout()
+		return { rolloffUpButton, rolloffDownButton, rolloffDistanceLabel }
+	}
+
 	attachBehaviors() {
 		if (
 			this.context.playButton &&
@@ -347,6 +452,12 @@ export class PlayerControls {
 			this.context.volumeUpButton.setBehavior(MRE.ButtonBehavior)
 				.onHover('hovering', debounce(this.handleVolumeChange("up"), 125))
 		}
+		if (this.context.rolloffDownButton && this.context.rolloffUpButton) {
+			this.context.rolloffDownButton.setBehavior(MRE.ButtonBehavior)
+				.onHover('hovering', debounce(this.handleRolloffDistanceChange("down"), 125))
+			this.context.rolloffUpButton.setBehavior(MRE.ButtonBehavior)
+				.onHover('hovering', debounce(this.handleRolloffDistanceChange("up"), 125))
+		}
 	}
 
 	handleButtonAction = async (user1: MyScreenUser, action: MediaControlHandlerActions) => {
@@ -369,6 +480,16 @@ export class PlayerControls {
 			try {
 				this.context.ignoreClicks = true;
 				this.mediaControlHandler.onVolumeChange(dir);
+			} finally {
+				this.context.ignoreClicks = false
+			}
+		}
+	}
+	handleRolloffDistanceChange = (dir: 'up' | 'down') => (user1: MyScreenUser) => {
+		if (!this.context.ignoreClicks) {
+			try {
+				this.context.ignoreClicks = true;
+				this.mediaControlHandler.onRolloffDistanceChange(dir);
 			} finally {
 				this.context.ignoreClicks = false
 			}

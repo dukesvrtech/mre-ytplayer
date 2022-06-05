@@ -17,11 +17,14 @@ import * as process from "process";
 const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
 	volume: 0.5,
 	spread: 0.0,
-	rolloffStartDistance: 50,
+	rolloffStartDistance: 10,
 	time: 0,
 })
 
 const getSeekDistance = () => process.env.SEEK_DISTANCE ? parseInt(process.env.SEEK_DISTANCE, 10) : 15;
+
+const getMaxRolloffDistance = () => parseInt(process.env.MAX_ROLLOFF_DISTANCE, 10) || 250;
+
 /**
  * The main class of this Index. All the logic goes here.
  */
@@ -57,6 +60,9 @@ export default class App implements MediaControlHandler {
 		this.context.soundOptions = getDefaultSoundOptions();
 		if (currentSoundOptions?.volume) {
 			this.context.soundOptions.volume = currentSoundOptions.volume;
+		}
+		if (currentSoundOptions?.rolloffStartDistance) {
+			this.context.soundOptions.rolloffStartDistance = currentSoundOptions.rolloffStartDistance;
 		}
 		this.context.progress = undefined;
 		await this.onPlay(user);
@@ -97,6 +103,7 @@ export default class App implements MediaControlHandler {
 			this.context.updateRemainingTime(this.getRemainingTime())
 			this.mediaInstance = videoActor.startVideoStream(videoStream.id, soundOptions)
 			this.mediaVideoStream = videoStream;
+			console.log("Playing", ytVideo.title, "space", user.properties['altspacevr-space-id']);
 			clearInterval(this.context.currentStreamIntervalInterval);
 			this.context.currentStreamIntervalInterval = setInterval(() => {
 				const remainingTime = this.getRemainingTime();
@@ -166,20 +173,22 @@ export default class App implements MediaControlHandler {
 			await block(() => this.initialized, 15000);
 		}
 		this.attachBehaviors();
+		console.log("User Joined", user.name, "space", user.properties['altspacevr-space-id']);
 	}
 	private attachBehaviors = () => {
 		this.playerControls?.attachBehaviors();
 		this.selectionsController?.attachBehaviors();
 	}
 	private handleUserLeft = (user: MyScreenUser) => {
+		console.log("User Left", user.name, "space", user.properties['altspacevr-space-id']);
 	};
 
 	private started = async () => {
 		console.log(this.context.sessionId, "App Started", this.parameterSet);
-		this.backgroundMesh = this.assets.createBoxMesh("main-background", 1, 0.68, 0.005);
+		this.backgroundMesh = this.assets.createBoxMesh("main-background", 1, 0.68, 0.000005);
 		// this.backgroundMaterial = this.assets.createMaterial("main-material", {color: MRE.Color3.Black()});
 		const tex = this.assets.createTexture(`texture-background`, {
-			uri: '/images/yt-background.png'
+			uri: '/images/yt-background.png',
 		});
 
 		this.backgroundMaterial = this.assets.createMaterial(`main-material`, {
@@ -224,17 +233,48 @@ export default class App implements MediaControlHandler {
 		}
 		this.context.videoActor = videoActor;
 		this.playerControls = new PlayerControls(this.context, this.assets, this);
-		this.playerControls.createUserControls(this.root)
+		this.playerControls.createMediaControls(this.root)
 		this.setVolumeLabel()
+		this.setRolloffDistanceLabel();
 		this.initialized = true;
 	};
 
 	private stopped = () => {
+		clearInterval(this.context.currentStreamIntervalInterval);
 		this.selectionsController?.destroyAssets();
-		this.mediaVideoStream.breakAllReferences();
+		this.mediaVideoStream?.breakAllReferences();
 		this.assets.unload();
 		this.context?.ytSelectionPanel?.destroy();
 		this.root?.destroy();
+		this.playerControls = undefined;
+		this.root = undefined;
+		this.mediaInstance = undefined;
+		this.mediaVideoStream = undefined;
+		this.selectionsController = undefined;
+		this.assets = undefined;
+		this.backgroundMesh = undefined;
+		this.backgroundMaterial = undefined;
+
+		delete this.context.videoActor;
+		delete this.context.playerControls;
+		delete this.context.selectionTitlePanel;
+		delete this.context.updatePlayerTitle;
+		delete this.context.rewindButton;
+		delete this.context.fastFwdButton;
+		delete this.context.volumeUpButton;
+		delete this.context.volumeDownButton;
+		delete this.context.volumeLabel;
+		delete this.context.rolloffDistanceLabel;
+		delete this.context.remainingTimeLabel;
+		delete this.context.updateRemainingTime;
+		delete this.context.currentVideoStream;
+		delete this.context.soundOptions;
+		delete this.context.ytSelectionPanel;
+		delete this.context.ytSelectionsPager;
+		delete this.context.pagerButtons;
+		delete this.context.ytPagerButtons;
+		delete this.context.progress;
+		delete this.context.currentStreamIntervalInterval;
 		console.log(this.context.sessionId, "App Stopped");
 	};
 
@@ -250,10 +290,28 @@ export default class App implements MediaControlHandler {
 		this.context.soundOptions = soundOptions;
 		this.setVolumeLabel();
 	}
+	onRolloffDistanceChange = (direction: "up" | "down") => {
+		const soundOptions = this.context.soundOptions
+		const val = soundOptions.rolloffStartDistance;
+		if (direction === 'down') {
+			soundOptions.rolloffStartDistance = val <= 1 ? 1 : val - 1;
+		} else {
+			soundOptions.rolloffStartDistance = val >= getMaxRolloffDistance() ? getMaxRolloffDistance() : val + 1
+		}
+		this.mediaInstance?.setState({rolloffStartDistance: soundOptions.volume});
+		this.context.soundOptions = soundOptions;
+		this.setRolloffDistanceLabel();
+	}
 	setVolumeLabel = () => {
 		if (this.context.soundOptions && this.context.volumeLabel) {
 			const val = this.context.soundOptions.volume * 100;
 			this.context.volumeLabel.text.contents = `Vol: ${Math.round(val)}%`;
+		}
+	}
+	setRolloffDistanceLabel = () => {
+		if (this.context.soundOptions && this.context.rolloffDistanceLabel) {
+			const val = this.context.soundOptions.rolloffStartDistance;
+			this.context.rolloffDistanceLabel.text.contents = `Rolloff: ${Math.round(val)}m`;
 		}
 	}
 }
