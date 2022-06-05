@@ -26,6 +26,10 @@ export type MyScreenContext = MRE.Context & {
 	volumeDownButton?: MRE.Actor;
 	volumeLabel?: MRE.Actor;
 
+	rolloffUpButton?: MRE.Actor;
+	rolloffDownButton?: MRE.Actor;
+	rolloffDistanceLabel?: MRE.Actor;
+
 	remainingTimeLabel?: MRE.Actor;
 	updateRemainingTime?: (val: number) => void;
 

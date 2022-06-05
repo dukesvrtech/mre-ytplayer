@@ -111,7 +111,8 @@ export class YoutubeSelectionsController {
 		}
 	}
 
-	getNextStream = (streamId: string) => this.nextStreamMapping[streamId];
+	getNextStream = (streamId: string) => this.nextStreamMapping?.[streamId];
+
 	displayPage = async (user: MyScreenUser, display = true, karaokeEnabled = false) => {
 		if (this.displayCardsBase) {
 			this.displayCardsBase.appearance.enabled = false;
@@ -123,15 +124,6 @@ export class YoutubeSelectionsController {
 			this.clearDisplayedBase();
 			this.displayCardsBase = null;
 		}
-		// const existingCardBase = this.context.ytSelectionPanel?.children.find(v => v.name === 'cards-base');
-		// if (existingCardBase) {
-		//     existingCardBase.appearance.enabled = false;
-		//     try {
-		//         // existingCardBase.destroy();
-		//     } catch (err) {
-		//         console.error(err);
-		//     }
-		// }
 		const cacheKey = `yt-cards-base-${this.context.ytSelectionsPager.start}_20`;
 		let cardsBase = null; // this.cardsBaseCache[cacheKey];
 		if (!cardsBase) {
@@ -142,6 +134,7 @@ export class YoutubeSelectionsController {
 				search,
 				this.context.ytSelectionsPager,
 			);
+			console.log("Searched", search, "space", user.properties['altspacevr-space-id']);
 			// auditStreamingData(user, "YouTube-Search", -1, search)
 			if (streams.length) {
 				//this.context.ytSelectionsPager.totalCount = await countActiveStreams()
@@ -275,7 +268,7 @@ export class YoutubeSelectionsController {
 		this.controlActor = MRE.Actor.Create(this.context, {
 			actor: {
 				// exclusiveToUser: id,
-				name: `yt-pager-controls-3d-wrapper`,
+				name: `yt-pager-controls--wrapper`,
 				// grabbable: true,
 				parentId: this.context.ytSelectionPanel.id,
 				transform: {
@@ -287,7 +280,6 @@ export class YoutubeSelectionsController {
 						rotation: MRE.Quaternion.FromEulerAngles(0, -Math.PI, 0),
 						scale: {
 							x: 1, y: 1.0, z: 1.0,
-							// x: 10, y: 10, z: 10,
 						}
 					}
 				}

@@ -17,6 +17,7 @@ export interface MediaControlHandler {
 	onOpenMenu: (user: MyScreenUser) => Promise<void>;
 	onCloseMenu: (user: MyScreenUser) => Promise<void>;
 	onVolumeChange: (direction: 'up' | 'down') => void;
+	onRolloffDistanceChange: (direction: 'up' | 'down') => void;
 	handlePlayButtonClick: (user: MyScreenUser, stream: YouTubeVideoStream) => Promise<void>;
 	// handlePlayButtonClick: (user: SoloUser, syncVideoStream: SynchronizedUserVideoStream) => Promise<void>;
 	// canShowSelections: (user: SoloUser) => Promise<boolean>;
