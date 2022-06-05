@@ -73,6 +73,14 @@ export default class App implements MediaControlHandler {
 			time: 0,
 		})
 	}
+	get defaultVideoId() {
+		return (this.parameterSet['vid'] as string) || process.env.DEFAULT_YT_ID || '9gmykUdtUlo'
+	}
+
+	get autoStart() {
+		return (this.parameterSet['start'] as string || '').toLowerCase() === 'y'
+	}
+
 	handlePlayButtonClick = async (user: MyScreenUser, stream: YouTubeVideoStream) => {
 		if (this.context.state !== 'stopped' && this.mediaInstance) {
 			await this.onStop(user)
@@ -127,17 +135,16 @@ export default class App implements MediaControlHandler {
 			this.mediaVideoStream = videoStream;
 			console.log("Playing", ytVideo.title, "space", user.properties['altspacevr-space-id']);
 			clearInterval(this.context.currentStreamIntervalInterval);
-			this.context.currentStreamIntervalInterval = setInterval(() => {
+			this.context.currentStreamIntervalInterval = setInterval( () => {
 				const remainingTime = this.getRemainingTime();
 				if (remainingTime > 0) {
 					this.context.progress.runningTime = this.getRunningTime();
 					this.context.updateRemainingTime(remainingTime);
 				} else {
 					clearInterval(this.context.currentStreamIntervalInterval);
-					const nextStream = this.selectionsController.getNextStream(this.context.currentVideoStream.id);
-					if (nextStream) {
-						this.handlePlayButtonClick(user, nextStream)
-					}
+					const nextStream = this.selectionsController.getNextStream(this.context.currentVideoStream.id)
+						|| currentVideoStream;
+					this.handlePlayButtonClick(user, nextStream);
 				}
 			}, 5000);
 
@@ -252,7 +259,7 @@ export default class App implements MediaControlHandler {
 		// Initial for testing
 		this.context.soundOptions = this.getDefaultSoundOptions();
 		this.context.currentVideoStream = {
-			id: process.env.DEFAULT_YT_ID || '9gmykUdtUlo'
+			id: this.defaultVideoId
 		}
 		this.context.videoActor = videoActor;
 		this.playerControls = new PlayerControls(this.context, this.assets, this);
@@ -261,6 +268,9 @@ export default class App implements MediaControlHandler {
 		this.setRolloffDistanceLabel();
 		this.setControlsDisplayEnabled(true);
 		this.initialized = true;
+		if (this.autoStart && this.context.users.length) {
+			this.onPlay(this.context.users[0])
+		}
 	};
 	
 	setControlsDisplayEnabled = (enabled: boolean) => {
