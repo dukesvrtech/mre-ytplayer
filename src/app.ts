@@ -23,8 +23,8 @@ import {
 
 const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
 	volume: 0.5,
-	spread: 0.0,
-	rolloffStartDistance: 10,
+	spread: 0.25,
+	rolloffStartDistance: 5,
 	time: 0,
 })
 
@@ -107,8 +107,8 @@ export default class App implements MediaControlHandler {
 			this.context.soundOptions.time = this.context.progress.runningTime;
 			this.context.currentVideoStream = ytVideo;
 			this.context.updatePlayerTitle(ytVideo.title);
-			this.context.updateRemainingTime(this.getRemainingTime())
-			this.mediaInstance = videoActor.startVideoStream(videoStream.id, soundOptions)
+			this.context.updateRemainingTime(this.getRemainingTime());
+			this.mediaInstance = videoActor.startVideoStream(videoStream.id, soundOptions);
 			this.mediaVideoStream = videoStream;
 			console.log("Playing", ytVideo.title, "space", user.properties['altspacevr-space-id']);
 			clearInterval(this.context.currentStreamIntervalInterval);
@@ -322,12 +322,13 @@ export default class App implements MediaControlHandler {
 	onRolloffDistanceChange = (direction: "up" | "down") => {
 		const soundOptions = this.context.soundOptions
 		const val = soundOptions.rolloffStartDistance;
+		const incr = 0.2;
 		if (direction === 'down') {
-			soundOptions.rolloffStartDistance = val <= 1 ? 1 : val - 1;
+			soundOptions.rolloffStartDistance = val - incr <= incr ? incr : val - incr;
 		} else {
-			soundOptions.rolloffStartDistance = val >= getMaxRolloffDistance() ? getMaxRolloffDistance() : val + 1
+			soundOptions.rolloffStartDistance = val >= getMaxRolloffDistance() ? getMaxRolloffDistance() : val + incr
 		}
-		this.mediaInstance?.setState({rolloffStartDistance: soundOptions.volume});
+		this.mediaInstance?.setState({rolloffStartDistance: soundOptions.rolloffStartDistance});
 		this.context.soundOptions = soundOptions;
 		this.setRolloffDistanceLabel();
 	}
@@ -340,7 +341,7 @@ export default class App implements MediaControlHandler {
 	setRolloffDistanceLabel = () => {
 		if (this.context.soundOptions && this.context.rolloffDistanceLabel) {
 			const val = this.context.soundOptions.rolloffStartDistance;
-			this.context.rolloffDistanceLabel.text.contents = `Rolloff: ${Math.round(val)}m`;
+			this.context.rolloffDistanceLabel.text.contents = `Rolloff: ${val.toFixed(1)}m`;
 		}
 	}
 
