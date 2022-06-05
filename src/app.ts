@@ -21,13 +21,6 @@ import {
 	LABEL_SELECTION_TITLE
 } from "./constants";
 
-const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
-	volume: 0.5,
-	spread: 0.0,
-	rolloffStartDistance: 10,
-	time: 0,
-})
-
 const getSeekDistance = () => process.env.SEEK_DISTANCE ? parseInt(process.env.SEEK_DISTANCE, 10) : 15;
 
 const getMaxRolloffDistance = () => parseInt(process.env.MAX_ROLLOFF_DISTANCE, 10) || 250;
@@ -58,13 +51,35 @@ export default class App implements MediaControlHandler {
 		this.context.onUserJoined(async (user) => await this.handleUserJoined(user));
 	}
 
+	getDefaultSoundOptions = (): MRE.SetVideoStateOptions => {
+		let volume = 0.5;
+		if (this.parameterSet['v']) {
+			const val = parseInt(this.parameterSet['v'] as string);
+			if (!Number.isNaN(val)) {
+				volume = val / 100;
+			}
+		}
+		let rolloffStartDistance = 5.0;
+		if (this.parameterSet['ro']) {
+			const val = parseFloat(this.parameterSet['ro'] as string);
+			if (!Number.isNaN(val)) {
+				rolloffStartDistance = val;
+			}
+		}
+		return ({
+			volume,
+			spread: 0.25,
+			rolloffStartDistance,
+			time: 0,
+		})
+	}
 	handlePlayButtonClick = async (user: MyScreenUser, stream: YouTubeVideoStream) => {
 		if (this.context.state !== 'stopped' && this.mediaInstance) {
 			await this.onStop(user)
 		}
 		this.context.currentVideoStream = stream
 		const currentSoundOptions = this.context.soundOptions;
-		this.context.soundOptions = getDefaultSoundOptions();
+		this.context.soundOptions = this.getDefaultSoundOptions();
 		if (currentSoundOptions?.volume) {
 			this.context.soundOptions.volume = currentSoundOptions.volume;
 		}
@@ -107,12 +122,11 @@ export default class App implements MediaControlHandler {
 			this.context.soundOptions.time = this.context.progress.runningTime;
 			this.context.currentVideoStream = ytVideo;
 			this.context.updatePlayerTitle(ytVideo.title);
-			this.context.updateRemainingTime(this.getRemainingTime())
-			this.mediaInstance = videoActor.startVideoStream(videoStream.id, soundOptions)
+			this.context.updateRemainingTime(this.getRemainingTime());
+			this.mediaInstance = videoActor.startVideoStream(videoStream.id, soundOptions);
 			this.mediaVideoStream = videoStream;
 			console.log("Playing", ytVideo.title, "space", user.properties['altspacevr-space-id']);
 			clearInterval(this.context.currentStreamIntervalInterval);
-			let counter = 0;
 			this.context.currentStreamIntervalInterval = setInterval(() => {
 				const remainingTime = this.getRemainingTime();
 				if (remainingTime > 0) {
@@ -125,7 +139,6 @@ export default class App implements MediaControlHandler {
 						this.handlePlayButtonClick(user, nextStream)
 					}
 				}
-				counter++;
 			}, 5000);
 
 		} else if (state === "paused") {
@@ -237,7 +250,7 @@ export default class App implements MediaControlHandler {
 		});
 		await this.root.created();
 		// Initial for testing
-		this.context.soundOptions = getDefaultSoundOptions();
+		this.context.soundOptions = this.getDefaultSoundOptions();
 		this.context.currentVideoStream = {
 			id: process.env.DEFAULT_YT_ID || '9gmykUdtUlo'
 		}
@@ -322,12 +335,13 @@ export default class App implements MediaControlHandler {
 	onRolloffDistanceChange = (direction: "up" | "down") => {
 		const soundOptions = this.context.soundOptions
 		const val = soundOptions.rolloffStartDistance;
+		const incr = 0.2;
 		if (direction === 'down') {
-			soundOptions.rolloffStartDistance = val <= 1 ? 1 : val - 1;
+			soundOptions.rolloffStartDistance = val - incr <= incr ? incr : val - incr;
 		} else {
-			soundOptions.rolloffStartDistance = val >= getMaxRolloffDistance() ? getMaxRolloffDistance() : val + 1
+			soundOptions.rolloffStartDistance = val >= getMaxRolloffDistance() ? getMaxRolloffDistance() : val + incr
 		}
-		this.mediaInstance?.setState({rolloffStartDistance: soundOptions.volume});
+		this.mediaInstance?.setState({rolloffStartDistance: soundOptions.rolloffStartDistance});
 		this.context.soundOptions = soundOptions;
 		this.setRolloffDistanceLabel();
 	}
@@ -340,7 +354,7 @@ export default class App implements MediaControlHandler {
 	setRolloffDistanceLabel = () => {
 		if (this.context.soundOptions && this.context.rolloffDistanceLabel) {
 			const val = this.context.soundOptions.rolloffStartDistance;
-			this.context.rolloffDistanceLabel.text.contents = `Rolloff: ${Math.round(val)}m`;
+			this.context.rolloffDistanceLabel.text.contents = `Rolloff: ${val.toFixed(1)}m`;
 		}
 	}
 
