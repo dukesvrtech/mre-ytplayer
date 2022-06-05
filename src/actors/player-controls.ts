@@ -14,16 +14,18 @@ import {
 } from "../constants";
 
 const commonDepth = -0.0015
+
 export class PlayerControls {
 
 	playButtonMesh: MRE.Mesh;
 	imageButtonMesh: MRE.Mesh;
+
 	// private arrowMesh: MRE.Mesh;
 
 	constructor(
-    private context: MyScreenContext,
-    private assets: MRE.AssetContainer,
-    private mediaControlHandler: MediaControlHandler) {
+		private context: MyScreenContext,
+		private assets: MRE.AssetContainer,
+		private mediaControlHandler: MediaControlHandler) {
 		this.playButtonMesh = assets.createCylinderMesh('arrow', 0.005, 0.08, 'z', 3);
 		this.imageButtonMesh = assets.createPlaneMesh(`plane-movie-card-mesh`, 0.075, 0.075);
 		// this.arrowMesh = this.assets.createCylinderMesh('arrow', 0.005, 0.08, 'z', 3);
@@ -139,7 +141,7 @@ export class PlayerControls {
 				if (this.context.selectionTitlePanel.text) {
 					const displayText =
 						title
-						// eslint-disable-next-line require-unicode-regexp
+							// eslint-disable-next-line require-unicode-regexp
 							.replace(/[^\x20-\x7E]/g, "")
 							.substring(0, 55) + (title.length > 55 ? '...' : '')
 					this.context.selectionTitlePanel.text.contents = wordWrap(displayText, {
@@ -150,17 +152,17 @@ export class PlayerControls {
 					});
 				}
 			}
-			const { volumeDownButton, volumeUpButton, volumeLabel } = this.setupVolumeControls(parentActor);
+			const {volumeDownButton, volumeUpButton, volumeLabel} = this.setupVolumeControls(parentActor);
 			this.context.volumeDownButton = volumeUpButton;
 			this.context.volumeUpButton = volumeDownButton;
 			this.context.volumeLabel = volumeLabel;
 
-			const { rolloffDistanceLabel, rolloffDownButton, rolloffUpButton } = this.setupRolloffControls(parentActor);
+			const {rolloffDistanceLabel, rolloffDownButton, rolloffUpButton} = this.setupRolloffControls(parentActor);
 			this.context.rolloffDistanceLabel = rolloffDistanceLabel;
 			this.context.rolloffUpButton = rolloffUpButton;
 			this.context.rolloffDownButton = rolloffDownButton;
 
-			const { onScreenControlsButton } = this.setupOnScreenDisplayToggle(parentActor);
+			const {onScreenControlsButton} = this.setupOnScreenDisplayToggle(parentActor);
 			this.context.onScreenControlsButton = onScreenControlsButton;
 			const controlScale = 0.45;
 			const controlActor = MRE.Actor.Create(this.context, {
@@ -254,8 +256,8 @@ export class PlayerControls {
 				grabbable: true,
 				transform: {
 					local: {
-						position: { z: commonDepth, y: 0.31, x: 0.375},
-						scale: { x: volScale, y: volScale, z: volScale }
+						position: {z: commonDepth, y: 0.31, x: 0.375},
+						scale: {x: volScale, y: volScale, z: volScale}
 
 					}
 				}
@@ -298,15 +300,16 @@ export class PlayerControls {
 					name: `volumen-down`,
 					parentId: root.id,
 					appearance: {
-						meshId:  this.imageButtonMesh.id,
+						meshId: this.imageButtonMesh.id,
 						materialId: volDownMat.id
 						// enabled: this.groupMask
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
-					transform: {local: {
-						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
-						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
-					}
+					transform: {
+						local: {
+							rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+							scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+						}
 					}
 				}
 			})
@@ -323,20 +326,21 @@ export class PlayerControls {
 					name: `volumen-up`,
 					parentId: root.id,
 					appearance: {
-						meshId:  this.imageButtonMesh.id,
+						meshId: this.imageButtonMesh.id,
 						materialId: volUpMat.id
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
-					transform: {local: {
-						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
-						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
-					}
+					transform: {
+						local: {
+							rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+							scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+						}
 					}
 				}
 			})
 		});
 		layout.applyLayout()
-		return { volumeUpButton, volumeDownButton, volumeLabel }
+		return {volumeUpButton, volumeDownButton, volumeLabel}
 	}
 
 	setupOnScreenDisplayToggle = (parent: MRE.Actor) => {
@@ -350,8 +354,8 @@ export class PlayerControls {
 				grabbable: true,
 				transform: {
 					local: {
-						position: { z: commonDepth, y: 0.31, x: 0},
-						scale: { x: volScale, y: volScale, z: volScale }
+						position: {z: commonDepth, y: 0.31, x: 0},
+						scale: {x: volScale, y: volScale, z: volScale}
 
 					}
 				}
@@ -372,14 +376,15 @@ export class PlayerControls {
 					name: `volumen-down`,
 					parentId: root.id,
 					appearance: {
-						meshId:  this.imageButtonMesh.id,
+						meshId: this.imageButtonMesh.id,
 						materialId: onScreenControlMat.id
 						// enabled: this.groupMask
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
-					transform: {local: {
-						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
-						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+					transform: {
+						local: {
+							rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+							scale: {x: arrowScale, y: arrowScale, z: arrowScale},
 						}
 					}
 				}
@@ -387,7 +392,7 @@ export class PlayerControls {
 		});
 
 		layout.applyLayout()
-		return { onScreenControlsButton }
+		return {onScreenControlsButton}
 	}
 
 	setupRolloffControls = (parent: MRE.Actor) => {
@@ -402,8 +407,8 @@ export class PlayerControls {
 				grabbable: true,
 				transform: {
 					local: {
-						position: { z: commonDepth, y: 0.31, x: 0.175},
-						scale: { x: rolloffScale, y: rolloffScale, z: rolloffScale }
+						position: {z: commonDepth, y: 0.31, x: 0.175},
+						scale: {x: rolloffScale, y: rolloffScale, z: rolloffScale}
 
 					}
 				}
@@ -446,15 +451,16 @@ export class PlayerControls {
 					name: `volumen-down`,
 					parentId: root.id,
 					appearance: {
-						meshId:  this.imageButtonMesh.id,
+						meshId: this.imageButtonMesh.id,
 						materialId: rolloffDownMat.id
 						// enabled: this.groupMask
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
-					transform: {local: {
-						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
-						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
-					}
+					transform: {
+						local: {
+							rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+							scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+						}
 					}
 				}
 			})
@@ -471,29 +477,30 @@ export class PlayerControls {
 					name: `volumen-up`,
 					parentId: root.id,
 					appearance: {
-						meshId:  this.imageButtonMesh.id,
+						meshId: this.imageButtonMesh.id,
 						materialId: rolloffUpMat.id
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
-					transform: {local: {
-						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
-						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
-					}
+					transform: {
+						local: {
+							rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+							scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+						}
 					}
 				}
 			})
 		});
 		layout.applyLayout()
-		return { rolloffUpButton, rolloffDownButton, rolloffDistanceLabel }
+		return {rolloffUpButton, rolloffDownButton, rolloffDistanceLabel}
 	}
 
 	attachBehaviors() {
 		if (
 			this.context.playButton &&
-      this.context.stopButton &&
-      this.context.rewindButton &&
-      this.context.fastFwdButton &&
-      this.context.menuButton) {
+			this.context.stopButton &&
+			this.context.rewindButton &&
+			this.context.fastFwdButton &&
+			this.context.menuButton) {
 			this.context.playButton.setBehavior(MRE.ButtonBehavior).onClick(this.handlePlayButton)
 			// .onHover("enter", () => {
 			//     this.playButton.appearance.meshId = this.buttonMaterials.hover.id;

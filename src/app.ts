@@ -127,7 +127,6 @@ export default class App implements MediaControlHandler {
 			this.mediaVideoStream = videoStream;
 			console.log("Playing", ytVideo.title, "space", user.properties['altspacevr-space-id']);
 			clearInterval(this.context.currentStreamIntervalInterval);
-			let counter = 0;
 			this.context.currentStreamIntervalInterval = setInterval(() => {
 				const remainingTime = this.getRemainingTime();
 				if (remainingTime > 0) {
@@ -140,7 +139,6 @@ export default class App implements MediaControlHandler {
 						this.handlePlayButtonClick(user, nextStream)
 					}
 				}
-				counter++;
 			}, 5000);
 
 		} else if (state === "paused") {
