@@ -378,8 +378,8 @@ export class PlayerControls {
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
 					transform: {local: {
-							rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
-							scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+						rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+						scale: {x: arrowScale, y: arrowScale, z: arrowScale},
 						}
 					}
 				}
