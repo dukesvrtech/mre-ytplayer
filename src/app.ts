@@ -61,10 +61,10 @@ export default class App implements MediaControlHandler {
 		}
 		let rolloffStartDistance = 5.0;
 		if (this.parameterSet['ro']) {
-			const val = parseFloat(this.parameterSet['ro'] as string) ;
-				if (!Number.isNaN(val)) {
-					rolloffStartDistance = val;
-				}
+			const val = parseFloat(this.parameterSet['ro'] as string);
+			if (!Number.isNaN(val)) {
+				rolloffStartDistance = val;
+			}
 		}
 		return ({
 			volume,
