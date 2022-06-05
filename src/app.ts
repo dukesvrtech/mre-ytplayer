@@ -13,6 +13,13 @@ import {hmsToSecondsOnly} from "./utils";
 import {YoutubeSelectionsController} from "./actors/youtube-selections-controller";
 import {YouTubeVideoStream} from "./models/yt";
 import * as process from "process";
+import {
+	ACTOR_MEDIA_CONTROLS,
+	ACTOR_ROLLOFF_ROOT,
+	ACTOR_VOLUME_ROOT,
+	LABEL_REMAINING_TIME,
+	LABEL_SELECTION_TITLE
+} from "./constants";
 
 const getDefaultSoundOptions = (): MRE.SetVideoStateOptions => ({
 	volume: 0.5,
@@ -105,6 +112,7 @@ export default class App implements MediaControlHandler {
 			this.mediaVideoStream = videoStream;
 			console.log("Playing", ytVideo.title, "space", user.properties['altspacevr-space-id']);
 			clearInterval(this.context.currentStreamIntervalInterval);
+			let counter = 0;
 			this.context.currentStreamIntervalInterval = setInterval(() => {
 				const remainingTime = this.getRemainingTime();
 				if (remainingTime > 0) {
@@ -117,6 +125,7 @@ export default class App implements MediaControlHandler {
 						this.handlePlayButtonClick(user, nextStream)
 					}
 				}
+				counter++;
 			}, 5000);
 
 		} else if (state === "paused") {
@@ -132,10 +141,11 @@ export default class App implements MediaControlHandler {
 			if (state === "playing") {
 				clearInterval(this.context.currentStreamIntervalInterval)
 				this.mediaInstance.stop();
+				this.setControlsDisplayEnabled(true);
 				this.context.state = 'stopped';
 				// this.assets.
 				this.mediaInstance = undefined;
-				this.mediaVideoStream?.breakReference(this.context.videoActor)
+				this.mediaVideoStream?.breakReference(this.context.videoActor);
 			}
 			// 	else if (state === 'playing') {
 			// 		this.mediaInstance.pause();
@@ -236,8 +246,26 @@ export default class App implements MediaControlHandler {
 		this.playerControls.createMediaControls(this.root)
 		this.setVolumeLabel()
 		this.setRolloffDistanceLabel();
+		this.setControlsDisplayEnabled(true);
 		this.initialized = true;
 	};
+	
+	setControlsDisplayEnabled = (enabled: boolean) => {
+		const actors = [
+			LABEL_SELECTION_TITLE,
+			LABEL_REMAINING_TIME,
+			ACTOR_MEDIA_CONTROLS,
+			ACTOR_VOLUME_ROOT,
+			ACTOR_ROLLOFF_ROOT
+		];
+		for(const actor of actors) {
+			const anActor = this.root.findChildrenByName(actor, false)?.[0];
+			if (anActor) {
+				anActor.appearance.enabled = enabled;
+			}
+		}
+		this.context.controlsHidden = !enabled;
+	}
 
 	private stopped = () => {
 		clearInterval(this.context.currentStreamIntervalInterval);
@@ -275,6 +303,7 @@ export default class App implements MediaControlHandler {
 		delete this.context.ytPagerButtons;
 		delete this.context.progress;
 		delete this.context.currentStreamIntervalInterval;
+		delete this.context.onScreenControlsButton;
 		console.log(this.context.sessionId, "App Stopped");
 	};
 
@@ -313,6 +342,10 @@ export default class App implements MediaControlHandler {
 			const val = this.context.soundOptions.rolloffStartDistance;
 			this.context.rolloffDistanceLabel.text.contents = `Rolloff: ${Math.round(val)}m`;
 		}
+	}
+
+	setOnScreenControlsClick = () => {
+		this.setControlsDisplayEnabled(this.context.controlsHidden);
 	}
 }
 

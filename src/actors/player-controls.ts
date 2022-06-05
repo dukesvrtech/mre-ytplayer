@@ -5,6 +5,13 @@ import wordWrap from "word-wrap";
 import {MyScreenContext, MyScreenUser} from "../models/base";
 import {MediaControlHandler, MediaControlHandlerActions} from "../models/controls";
 import {debounce} from "debounce";
+import {
+	ACTOR_MEDIA_CONTROLS,
+	ACTOR_ROLLOFF_ROOT,
+	ACTOR_VOLUME_ROOT,
+	LABEL_REMAINING_TIME,
+	LABEL_SELECTION_TITLE
+} from "../constants";
 
 const commonDepth = -0.0015
 export class PlayerControls {
@@ -75,7 +82,7 @@ export class PlayerControls {
 		const scaleDown = 0.7;
 		const label = MRE.Actor.Create(this.context, {
 			actor: {
-				name: `user-current-selection-title`,
+				name: LABEL_SELECTION_TITLE,
 				parentId: parent.id,
 				transform: {
 					local: {
@@ -101,7 +108,7 @@ export class PlayerControls {
 	createRemainingTimePanel(parent: MRE.Actor) {
 		const label = MRE.Actor.Create(this.context, {
 			actor: {
-				name: `remaing-time`,
+				name: LABEL_REMAINING_TIME,
 				parentId: parent.id,
 				transform: {
 					local: {
@@ -153,10 +160,12 @@ export class PlayerControls {
 			this.context.rolloffUpButton = rolloffUpButton;
 			this.context.rolloffDownButton = rolloffDownButton;
 
+			const { onScreenControlsButton } = this.setupOnScreenDisplayToggle(parentActor);
+			this.context.onScreenControlsButton = onScreenControlsButton;
 			const controlScale = 0.45;
 			const controlActor = MRE.Actor.Create(this.context, {
 				actor: {
-					name: `media-controls-wrapper`,
+					name: ACTOR_MEDIA_CONTROLS,
 					grabbable: true,
 					parentId: parentActor?.id,
 					transform: {
@@ -239,7 +248,7 @@ export class PlayerControls {
 		const volScale = .6;
 		const root = MRE.Actor.Create(this.context, {
 			actor: {
-				name: `base-volume-Root`,
+				name: ACTOR_VOLUME_ROOT,
 				parentId: parent.id,
 				appearance: {enabled: true},
 				grabbable: true,
@@ -330,13 +339,64 @@ export class PlayerControls {
 		return { volumeUpButton, volumeDownButton, volumeLabel }
 	}
 
+	setupOnScreenDisplayToggle = (parent: MRE.Actor) => {
+		const onScreenControlMat = this.getImageButtonMaterial('onscreen-controls', '/images/Full-Screen.png');
+		const volScale = .6;
+		const root = MRE.Actor.Create(this.context, {
+			actor: {
+				name: `base-onscreen-Root`,
+				parentId: parent.id,
+				appearance: {enabled: true},
+				grabbable: true,
+				transform: {
+					local: {
+						position: { z: commonDepth, y: 0.31, x: 0},
+						scale: { x: volScale, y: volScale, z: volScale }
+
+					}
+				}
+			}
+		});
+		const layout = new MRE.PlanarGridLayout(root);
+		const cw = 0.065, ch = 0.1;
+		const arrowScale = 0.60;
+		let onScreenControlsButton: MRE.Actor;
+		layout.addCell({
+			row: 0,
+			column: 0,
+			width: cw,
+			height: ch,
+			// alignment: BoxAlignment.MiddleCenter,
+			contents: onScreenControlsButton = MRE.Actor.Create(this.context, {
+				actor: {
+					name: `volumen-down`,
+					parentId: root.id,
+					appearance: {
+						meshId:  this.imageButtonMesh.id,
+						materialId: onScreenControlMat.id
+						// enabled: this.groupMask
+					},
+					collider: {geometry: {shape: MRE.ColliderType.Auto}},
+					transform: {local: {
+							rotation: MRE.Quaternion.FromEulerAngles(-Math.PI * .5, Math.PI * 0, Math.PI * 0),
+							scale: {x: arrowScale, y: arrowScale, z: arrowScale},
+						}
+					}
+				}
+			})
+		});
+
+		layout.applyLayout()
+		return { onScreenControlsButton }
+	}
+
 	setupRolloffControls = (parent: MRE.Actor) => {
 		const rolloffDownMat = this.getImageButtonMaterial('play', '/images/Fast-Backward.png');
 		const rolloffUpMat = this.getImageButtonMaterial('stop', '/images/Fast-Forward.png');
 		const rolloffScale = .6;
 		const root = MRE.Actor.Create(this.context, {
 			actor: {
-				name: `base-rolloff-Root`,
+				name: ACTOR_ROLLOFF_ROOT,
 				parentId: parent.id,
 				appearance: {enabled: true},
 				grabbable: true,
@@ -457,6 +517,10 @@ export class PlayerControls {
 				.onHover('hovering', debounce(this.handleRolloffDistanceChange("down"), 125))
 			this.context.rolloffUpButton.setBehavior(MRE.ButtonBehavior)
 				.onHover('hovering', debounce(this.handleRolloffDistanceChange("up"), 125))
+		}
+		if (this.context.onScreenControlsButton) {
+			this.context.onScreenControlsButton.setBehavior(MRE.ButtonBehavior)
+				.onClick(this.mediaControlHandler.setOnScreenControlsClick)
 		}
 	}
 
