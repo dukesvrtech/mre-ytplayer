@@ -38,7 +38,10 @@ export const getVideoStreamFromYT = async (id: string): Promise<YouTubeVideoStre
 				title,
 				uri: "<onClick>",
 			}
-			const format = info?.formats.find(f => f.itag === 18);
+			let format = info?.formats.find(f => f.itag === 22);
+			if (!format) {
+				format = info?.formats.find(f => f.itag === 18);
+			}
 			if (!format) {
 				const hls = info?.formats?.find(f => f.isHLS);
 				if (hls) {
