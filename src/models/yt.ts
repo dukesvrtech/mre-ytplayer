@@ -23,7 +23,6 @@ export interface YouTubeVideoStream {
 
 export type YoutubeSearchResult = {
 	items: YoutubeSearchResultItem[];
-	// ne
 }
 export type YoutubeSearchResultItem = {
 	"id": string;

@@ -5,12 +5,12 @@ import {secondsToString} from "../utils";
 import * as process from "process";
 import {Pager} from "../models/base";
 
-const shotYTCache = new nodeCache({deleteOnExpire: true, stdTTL: 60, useClones: false})
+const shortYTCache = new nodeCache({deleteOnExpire: true, stdTTL: 60, useClones: false})
 const cookie = process.env.YOU_TUBE_COOKIE;
 export const getVideoStreamFromYT = async (id: string): Promise<YouTubeVideoStream> => {
 	try {
 		const cacheKey = `yt-${id}`
-		const videoStream = shotYTCache.get(cacheKey);
+		const videoStream = shortYTCache.get(cacheKey);
 		if (videoStream) {
 			return videoStream as YouTubeVideoStream;
 		}
@@ -47,12 +47,12 @@ export const getVideoStreamFromYT = async (id: string): Promise<YouTubeVideoStre
 				if (hls) {
 					ytVideoStream.uri = hls?.url;
 					ytVideoStream.live = true;
-					ytVideoStream.duration = "99:99:99";
+					ytVideoStream.duration = "23:59:59";
 				}
 			} else {
 				ytVideoStream.uri = format.url + '&.mp4';
 			}
-			shotYTCache.set(cacheKey, ytVideoStream, 600);
+			shortYTCache.set(cacheKey, ytVideoStream, 600);
 			return ytVideoStream;
 		}
 		console.error("Could  not find a youtube format that works", id);
@@ -71,7 +71,6 @@ export const searchYoutube = (q: string): Promise<YoutubeSearchResult> => {
 
 export const getVideoStreamFromSearch = async (search: string, pager?: Pager): Promise<YouTubeVideoStream[]> => {
 	const ytResults = await searchYoutube(search);
-	// console.log("Horace.2", JSON.stringify(ytResults.items.length, null, 2));
 	const vidStreams: YouTubeVideoStream[] = [];
 	for (const item of ytResults?.items) {
 		const {id, thumbnail, title, length, type} = item;

@@ -20,15 +20,12 @@ export class PlayerControls {
 	playButtonMesh: MRE.Mesh;
 	imageButtonMesh: MRE.Mesh;
 
-	// private arrowMesh: MRE.Mesh;
-
 	constructor(
 		private context: MyScreenContext,
 		private assets: MRE.AssetContainer,
 		private mediaControlHandler: MediaControlHandler) {
 		this.playButtonMesh = assets.createCylinderMesh('arrow', 0.005, 0.08, 'z', 3);
 		this.imageButtonMesh = assets.createPlaneMesh(`plane-movie-card-mesh`, 0.075, 0.075);
-		// this.arrowMesh = this.assets.createCylinderMesh('arrow', 0.005, 0.08, 'z', 3);
 	}
 
 	getImageButtonMaterial = (id: string, uri: string): MRE.Material => {
@@ -115,9 +112,6 @@ export class PlayerControls {
 				transform: {
 					local: {
 						position: {z: commonDepth, y: -0.325, x: -.48},
-						// position: {z: -2.17, y: -10.4, x: timeModeLeft},
-						// rotation: {y: 45},
-						// scale: {x: 20.0, y: 20.0, z: 20.0}
 					}
 				},
 				text: {
@@ -187,8 +181,6 @@ export class PlayerControls {
 			const lMenuBtnMat = this.getImageButtonMaterial('stop', '/images/Cog.png');
 			const lRewindBtnMat = this.getImageButtonMaterial('stop', '/images/Backward-15s.png');
 			const lFwdBtnMat = this.getImageButtonMaterial('stop', '/images/Forward-15s.png');
-
-			// const lPlyBtnMesh = this.imageButtonMesh;
 
 			const {
 				playButton: menuButton,
@@ -277,7 +269,6 @@ export class PlayerControls {
 				actor: {
 					name: `volume-label`,
 					parentId: root.id,
-					// appearance: { enabled: this.groupMask },
 					text: {
 						contents: `test`,
 						height: 0.0225,
@@ -302,7 +293,6 @@ export class PlayerControls {
 					appearance: {
 						meshId: this.imageButtonMesh.id,
 						materialId: volDownMat.id
-						// enabled: this.groupMask
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
 					transform: {
@@ -320,7 +310,6 @@ export class PlayerControls {
 			column: 1,
 			width: cw,
 			height: ch,
-			// alignment: BoxAlignment.MiddleCenter,
 			contents: volumeUpButton = MRE.Actor.Create(this.context, {
 				actor: {
 					name: `volumen-up`,
@@ -370,15 +359,13 @@ export class PlayerControls {
 			column: 0,
 			width: cw,
 			height: ch,
-			// alignment: BoxAlignment.MiddleCenter,
 			contents: onScreenControlsButton = MRE.Actor.Create(this.context, {
 				actor: {
-					name: `volumen-down`,
+					name: `volume-down`,
 					parentId: root.id,
 					appearance: {
 						meshId: this.imageButtonMesh.id,
 						materialId: onScreenControlMat.id
-						// enabled: this.groupMask
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
 					transform: {
@@ -423,12 +410,10 @@ export class PlayerControls {
 			column: 2,
 			width: cw / 4,
 			height: ch,
-			// alignment: BoxAlignment.MiddleCenter,
 			contents: rolloffDistanceLabel = MRE.Actor.Create(this.context, {
 				actor: {
 					name: `volume-label`,
 					parentId: root.id,
-					// appearance: { enabled: this.groupMask },
 					text: {
 						contents: `test`,
 						height: 0.0225,
@@ -445,7 +430,6 @@ export class PlayerControls {
 			column: 0,
 			width: cw,
 			height: ch,
-			// alignment: BoxAlignment.MiddleCenter,
 			contents: rolloffDownButton = MRE.Actor.Create(this.context, {
 				actor: {
 					name: `volumen-down`,
@@ -453,7 +437,6 @@ export class PlayerControls {
 					appearance: {
 						meshId: this.imageButtonMesh.id,
 						materialId: rolloffDownMat.id
-						// enabled: this.groupMask
 					},
 					collider: {geometry: {shape: MRE.ColliderType.Auto}},
 					transform: {
@@ -471,10 +454,9 @@ export class PlayerControls {
 			column: 1,
 			width: cw,
 			height: ch,
-			// alignment: BoxAlignment.MiddleCenter,
 			contents: rolloffUpButton = MRE.Actor.Create(this.context, {
 				actor: {
-					name: `volumen-up`,
+					name: `volume-up`,
 					parentId: root.id,
 					appearance: {
 						meshId: this.imageButtonMesh.id,

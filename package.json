@@ -1,6 +1,6 @@
 {
   "name": "yt-player",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "main": "built/server.js",
   "repository": {
@@ -19,7 +19,7 @@
     "npm": "8.x"
   },
   "author": "Dukes VR Tech",
-  "license": "MIT",
+  "license": "GPL",
   "bugs": {
     "url": ""
   },

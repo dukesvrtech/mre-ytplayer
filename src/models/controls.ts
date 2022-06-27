@@ -20,8 +20,4 @@ export interface MediaControlHandler {
 	onRolloffDistanceChange: (direction: 'up' | 'down') => void;
 	handlePlayButtonClick: (user: MyScreenUser, stream: YouTubeVideoStream) => Promise<void>;
 	setOnScreenControlsClick: () => void;
-	// handlePlayButtonClick: (user: SoloUser, syncVideoStream: SynchronizedUserVideoStream) => Promise<void>;
-	// canShowSelections: (user: SoloUser) => Promise<boolean>;
-	// resetMRE: (user: SoloUser) => Promise<void>;
-	// onSelectMode: (user: SoloUser, selectedOption: ModeSelectionOption) => Promise<void>
 }
