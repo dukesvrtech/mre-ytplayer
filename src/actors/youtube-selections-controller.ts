@@ -120,7 +120,6 @@ export class YoutubeSelectionsController {
 				of this.displayCardsBase.findChildrenByName(playButtonName, true) as MyScreenPlayButton[]) {
 				playButton.setBehavior(null);
 			}
-			// this.displayCardsBase.destroy();
 			this.clearDisplayedBase();
 			this.displayCardsBase = null;
 		}
@@ -135,9 +134,7 @@ export class YoutubeSelectionsController {
 				this.context.ytSelectionsPager,
 			);
 			console.log("Searched", search, "space", user.properties['altspacevr-space-id']);
-			// auditStreamingData(user, "YouTube-Search", -1, search)
 			if (streams.length) {
-				//this.context.ytSelectionsPager.totalCount = await countActiveStreams()
 				const cards = [];
 				const gridWidth = 6;
 				let i = 0;
@@ -165,8 +162,6 @@ export class YoutubeSelectionsController {
 						width: .190,
 						contents: card.base
 					});
-					// this.context.displayedCards
-					// .push({playButton: card.playButton, selectedStream: stream, base: cardsBase});
 					i++;
 				}
 				if (prev && Object.keys(this.nextStreamMapping).length) {
@@ -317,7 +312,6 @@ export class YoutubeSelectionsController {
 			closeButton,
 		}
 		controlLayout.applyLayout();
-		// this.prefetch();
 	}
 	displayMovieSelectionPicker = async (soloUser: MyScreenUser, karaokeEnabled = false) => {
 		const openPanel = async (refreshCardBase = true) => {
@@ -464,7 +458,6 @@ export class YoutubeSelectionsController {
 			transform: {
 				local: {
 					rotation: MRE.Quaternion.FromEulerAngles(0, -Math.PI, 0),
-					// scale: {x: 100.25, y: 100.25, z: 100.25},
 					position: {z: -.05, y: -.35, x: 0}
 				}
 			}
@@ -472,7 +465,6 @@ export class YoutubeSelectionsController {
 	});
 
 	createVideoCard = (parent: MRE.Actor, videoStream: YouTubeVideoStream, index: number) => {
-		// const currStream = context.currentStream;
 		const promises = [];
 		const base = MRE.Actor.Create(
 			this.context, {
@@ -557,8 +549,6 @@ export class YoutubeSelectionsController {
 				}
 			}
 		});
-		// const playing = this.context.screenType === 'yt' && this.context.currentStream === videoStream.id;
-		const playing = false;
 		const playButton = MRE.Actor.Create(this.context,
 			{
 				actor: {
@@ -566,7 +556,7 @@ export class YoutubeSelectionsController {
 					name: playButtonName,
 					appearance: {
 						meshId: playButtonBox.id,
-						materialId: playing ? this.currentPlayMaterial.id : playButtonMaterial.id,
+						materialId: playButtonMaterial.id,
 						enabled: true
 					},
 					transform: {
@@ -598,7 +588,7 @@ export class YoutubeSelectionsController {
 					}
 				},
 				text: {
-					contents: playing ? "Playing" : "Play",
+					contents: "Play",
 					pixelsPerLine: 12,
 					height: 0.008,
 					anchor: MRE.TextAnchorLocation.MiddleCenter,
@@ -607,7 +597,7 @@ export class YoutubeSelectionsController {
 			}
 		});
 		promises.push(label.created());
-		// await Promise.all(promises);
+		// await Promise.all(promises); Some weird bug sometimes hang processing.
 		return {base, playButton, videoStream};
 	};
 

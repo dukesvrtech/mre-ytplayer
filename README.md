@@ -1,5 +1,5 @@
-# My Screen Mirror MRE
-Toggles between 3D and 2D screen by just clicking the screen.
+# Duke's YouTube Player MRE
+Plays YouTube videos in Altspace worlds and events.
 
 ## Install
 ```

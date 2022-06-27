@@ -1,7 +1,7 @@
 {
-	"name": "Heads Up",
-	"author": "Microsoft",
-	"license": "MIT",
-	"repositoryUrl": "https://github.com/hreid3/mre-heads-up",
+	"name": "Duke's YouTube Player",
+	"author": "Duke's VR Tech",
+	"license": "GNU GENERAL PUBLIC LICENSE",
+	"repositoryUrl": "https://github.com/dukesvrtech/mre-ytplayer",
 	"optionalPermissions": ["user-interaction"]
 }

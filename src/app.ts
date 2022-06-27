@@ -1,10 +1,10 @@
 /*!
- * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Copyright (c) Duke's VR Tech. All rights reserved.
  * Licensed under the MIT License.
  */
 
 import * as MRE from "@microsoft/mixed-reality-extension-sdk";
-import block from "./block";
+import block from "./utils/block";
 import {getVideoStreamFromYT} from "./services/yt-service";
 import {MyScreenContext, MyScreenUser} from "./models/base";
 import {MediaControlHandler} from "./models/controls";
@@ -42,7 +42,7 @@ export default class App implements MediaControlHandler {
 	constructor(private context: MyScreenContext, private parameterSet: MRE.ParameterSet) {
 		console.log(this.context.sessionId, "constructed");
 		// this.context.conn.on('send', (message, serializedMessage) => {
-		// 	console.log("Horace.message", message, serializedMessage)
+		// 	console.log("Inspect.message", message, serializedMessage)
 		// })
 		this.assets = new MRE.AssetContainer(context);
 		this.context.onStarted(() => this.started());
@@ -167,13 +167,7 @@ export default class App implements MediaControlHandler {
 				this.mediaInstance = undefined;
 				this.mediaVideoStream?.breakReference(this.context.videoActor);
 			}
-			// 	else if (state === 'playing') {
-			// 		this.mediaInstance.pause();
-			// 		console.log("Horace", "Pause");
-			// 		this.context.state = 'paused'
-			// 	}
 		}
-
 	};
 	onRewind = async (user: MRE.User) => {
 		if (this.mediaInstance && this.context.currentVideoStream) {
@@ -225,8 +219,6 @@ export default class App implements MediaControlHandler {
 			mainTextureId: tex.id,
 			emissiveTextureId: tex.id,
 			emissiveColor: MRE.Color3.White(),
-			// color: MRE.Color3.Red()
-
 		});
 
 		this.root = MRE.Actor.Create(this.context, {
