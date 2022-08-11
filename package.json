@@ -68,6 +68,6 @@
     "node-cache": "^5.1.2",
     "word-wrap": "^1.2.3",
     "youtube-search-api": "^1.1.0",
-    "ytdl-core": "^4.11.0"
+    "ytdl-core": "4.9.1 "
   }
 }
