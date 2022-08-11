@@ -1,6 +1,6 @@
 {
   "name": "yt-player",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "",
   "main": "built/server.js",
   "repository": {
