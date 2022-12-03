@@ -1,6 +1,6 @@
 {
   "name": "yt-player",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "",
   "main": "built/server.js",
   "repository": {
@@ -56,7 +56,7 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "@microsoft/mixed-reality-extension-sdk": "https://3d-vr.nyc3.cdn.digitaloceanspaces.com/nodejs/microsoft-mixed-reality-extension-sdk-0.20.0.tgz",
+    "@microsoft/mixed-reality-extension-sdk": "https://3d-vr.nyc3.cdn.digitaloceanspaces.com/nodejs/dukes-vr-microsoft-mixed-reality-extension-sdk-0.20.0.tgz",
     "@types/debounce": "^1.2.1",
     "@types/dotenv": "^6.1.0",
     "@types/lodash.debounce": "^4.0.7",
