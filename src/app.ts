@@ -198,7 +198,7 @@ export default class App implements MediaControlHandler {
 	// eslint-disable-next-line @typescript-eslint/require-await
 	onStop = async (user: MRE.User) => {
 		const {state} = this.context;
-		if (this.mediaInstance) {
+		if (this.mediaInstance && !this.context.dukeAdsPlayActive) {
 			if (state === "playing") {
 				clearInterval(this.context.currentStreamIntervalInterval)
 				this.mediaInstance.stop();
