@@ -169,8 +169,13 @@ export default class App implements MediaControlHandler {
 			this.context.currentStreamIntervalInterval = setInterval( () => {
 				const remainingTime = this.getRemainingTime();
 				if (remainingTime > 0) {
-					this.context.progress.runningTime = this.getRunningTime();
-					this.context.updateRemainingTime(remainingTime);
+					if (this.context.progress) {
+						this.context.progress.runningTime = this.getRunningTime();
+						this.context.updateRemainingTime(remainingTime);
+					} else {
+						console.log("Detected broken context",
+							user.name, "space", user.properties['altspacevr-space-id']);
+					}
 				} else {
 					clearInterval(this.context.currentStreamIntervalInterval);
 					let nextStream;
@@ -229,7 +234,9 @@ export default class App implements MediaControlHandler {
 		}
 	};
 	onOpenMenu = async (user: MRE.User) => {
-		await this.selectionsController.displayMovieSelectionPicker(user, false)
+		if (!this.context.dukeAdsPlayActive) {
+			await this.selectionsController.displayMovieSelectionPicker(user, false)
+		}
 	};
 
 	onCloseMenu(user: MyScreenUser): Promise<void> {
