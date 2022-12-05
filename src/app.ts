@@ -6,7 +6,7 @@
 import * as MRE from "@microsoft/mixed-reality-extension-sdk";
 import block from "./utils/block";
 import {getVideoStreamFromYT} from "./services/yt-service";
-import {MyScreenContext, MyScreenUser} from "./models/base";
+import {DukeAds, MyScreenContext, MyScreenUser} from "./models/base";
 import {MediaControlHandler} from "./models/controls";
 import {PlayerControls} from "./actors/player-controls";
 import {hmsToSecondsOnly} from "./utils";
@@ -24,6 +24,18 @@ import {
 const getSeekDistance = () => process.env.SEEK_DISTANCE ? parseInt(process.env.SEEK_DISTANCE, 10) : 15;
 
 const getMaxRolloffDistance = () => parseInt(process.env.MAX_ROLLOFF_DISTANCE, 10) || 250;
+
+const getNextAd = (): DukeAds | null => {
+	const adRerunTime = (process.env.DUKE_ADS_RERUN_TIME) ? parseInt(process.env.DUKE_ADS_RERUN_TIME, 10) : 20
+	const adId = process.env.DUKE_ADS_ID;
+	if (adId && process.env.DUKE_ADS_DISABLED?.toLowerCase() !== 'true') {
+		return {
+			dukeAdsId: adId,
+			dukeAdsRerunTime: adRerunTime
+		}
+	}
+	return null
+}
 
 /**
  * The main class of this Index. All the logic goes here.
@@ -81,7 +93,7 @@ export default class App implements MediaControlHandler {
 		return (this.parameterSet['start'] as string || '').toLowerCase() === 'y'
 	}
 
-	handlePlayButtonClick = async (user: MyScreenUser, stream: YouTubeVideoStream) => {
+	doPlayActionHelper = async (user: MyScreenUser, stream: YouTubeVideoStream, resetProgress = true) => {
 		if (this.context.state !== 'stopped' && this.mediaInstance) {
 			await this.onStop(user)
 		}
@@ -94,9 +106,15 @@ export default class App implements MediaControlHandler {
 		if (currentSoundOptions?.rolloffStartDistance) {
 			this.context.soundOptions.rolloffStartDistance = currentSoundOptions.rolloffStartDistance;
 		}
-		this.context.progress = undefined;
+		if (resetProgress) {
+			this.context.progress = undefined;
+		}
 		await this.onPlay(user);
 	};
+
+	handlePlayButtonClick = async (user: MyScreenUser, stream: YouTubeVideoStream) =>
+		this.doPlayActionHelper(user, stream, true)
+
 	getRunningTime = () => {
 		if (this.context.progress) {
 			const delta = Date.now() - this.context.progress.startTime;
@@ -113,27 +131,40 @@ export default class App implements MediaControlHandler {
 	}
 
 	onPlay = async (user: MRE.User) => {
-		const {state, soundOptions, currentVideoStream, videoActor} = this.context;
+		const {state, soundOptions, currentVideoStream, videoActor, dukeAdslastPlayTimestamp = 0} = this.context;
+		const { dukeAdsRerunTime, dukeAdsId } = getNextAd() || {}
 		if ((state === 'stopped' || !state) && currentVideoStream?.id) {
-			const ytVideo = await getVideoStreamFromYT(currentVideoStream?.id)
+			let playId = currentVideoStream?.id;
+			let progress = this.context.progress || {
+				runningTime: 0,
+				startTime: 0,
+			}
+			if (dukeAdsId && Date.now() - dukeAdslastPlayTimestamp > dukeAdsRerunTime * (1000 * 60) && dukeAdsId) {
+				playId = dukeAdsId;
+				this.context.dukeAdsPlayActive = true
+				this.context.dukeAdsProgress = this.context.dukeAdsProgress || { ...progress }
+				progress = {
+					runningTime: 0,
+					startTime: 0,
+				}
+			}
+			const ytVideo = await getVideoStreamFromYT(playId)
+			const playTitle = `${this.context.dukeAdsPlayActive ? 'DUKE ADS: ' : ''}${ytVideo.title}`
 			const videoStream = this.assets.createVideoStream(
-				`yt-${currentVideoStream.id}`,
+				`yt-${playId}`,
 				{
 					uri: ytVideo.uri
 				}
 			);
-			this.context.progress = this.context.progress || {
-				runningTime: 0,
-				startTime: 0,
-			}
+			this.context.progress = progress
 			this.context.progress.startTime = Date.now() - this.context.progress.runningTime * 1000;
 			this.context.soundOptions.time = this.context.progress.runningTime;
 			this.context.currentVideoStream = ytVideo;
-			this.context.updatePlayerTitle(ytVideo.title);
+			this.context.updatePlayerTitle(playTitle);
 			this.context.updateRemainingTime(this.getRemainingTime());
 			this.mediaInstance = videoActor.startVideoStream(videoStream.id, soundOptions);
 			this.mediaVideoStream = videoStream;
-			console.log("Playing", ytVideo.title, "space", user.properties['altspacevr-space-id']);
+			console.log("Playing", playTitle, "space", user.properties['altspacevr-space-id']);
 			clearInterval(this.context.currentStreamIntervalInterval);
 			this.context.currentStreamIntervalInterval = setInterval( () => {
 				const remainingTime = this.getRemainingTime();
@@ -142,8 +173,18 @@ export default class App implements MediaControlHandler {
 					this.context.updateRemainingTime(remainingTime);
 				} else {
 					clearInterval(this.context.currentStreamIntervalInterval);
-					const nextStream = this.selectionsController.getNextStream(this.context.currentVideoStream.id)
-						|| currentVideoStream;
+					let nextStream;
+					if (this.context.dukeAdsPlayActive) {
+						this.context.dukeAdsPlayActive = false
+						this.context.dukeAdslastPlayTimestamp = Date.now()
+						this.context.progress = { ...this.context.dukeAdsProgress }
+						this.context.dukeAdsProgress = undefined
+						this.doPlayActionHelper(user, currentVideoStream, false)
+						return
+					} else {
+						nextStream = this.selectionsController.getNextStream(this.context.currentVideoStream.id)
+							|| currentVideoStream;
+					}
 					this.handlePlayButtonClick(user, nextStream);
 				}
 			}, 5000);
@@ -157,7 +198,7 @@ export default class App implements MediaControlHandler {
 	// eslint-disable-next-line @typescript-eslint/require-await
 	onStop = async (user: MRE.User) => {
 		const {state} = this.context;
-		if (this.mediaInstance) {
+		if (this.mediaInstance && !this.context.dukeAdsPlayActive) {
 			if (state === "playing") {
 				clearInterval(this.context.currentStreamIntervalInterval)
 				this.mediaInstance.stop();
@@ -170,7 +211,7 @@ export default class App implements MediaControlHandler {
 		}
 	};
 	onRewind = async (user: MRE.User) => {
-		if (this.mediaInstance && this.context.currentVideoStream) {
+		if (this.mediaInstance && this.context.currentVideoStream && !this.context.dukeAdsPlayActive) {
 			await this.onStop(user);
 			const runningTime = this.getRunningTime() - getSeekDistance();
 			this.context.progress.runningTime = runningTime >= 0 ? runningTime : 0;
@@ -178,7 +219,10 @@ export default class App implements MediaControlHandler {
 		}
 	};
 	onFastForward = async (user: MRE.User) => {
-		if (this.mediaInstance && this.context.currentVideoStream && this.getRemainingTime() > getSeekDistance()) {
+		if (this.mediaInstance
+			&& this.context.currentVideoStream
+			&& !this.context.dukeAdsPlayActive
+			&& this.getRemainingTime() > getSeekDistance()) {
 			await this.onStop(user);
 			this.context.progress.runningTime += getSeekDistance();
 			await this.onPlay(user);

@@ -9,7 +9,10 @@ export type Pager = {
 	totalCount: number;
 	numberPages?: number;
 }
-
+export type DukeAds = {
+	dukeAdsId: string;
+	dukeAdsRerunTime?: number;
+}
 export type MyScreenContext = MRE.Context & {
 	videoActor?: MRE.Actor;
 	playerControls?: MRE.Actor;
@@ -55,6 +58,11 @@ export type MyScreenContext = MRE.Context & {
 	};
 	progress?: Progress;
 	currentStreamIntervalInterval?: Timeout;
+
+	advertisement?: DukeAds;
+	dukeAdslastPlayTimestamp?: number;
+	dukeAdsPlayActive?: boolean;
+	dukeAdsProgress?: Progress;
 }
 export type MyScreenUser = MRE.User & {};
 
