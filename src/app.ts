@@ -21,17 +21,30 @@ import {
 	LABEL_SELECTION_TITLE
 } from "./constants";
 
+let currentAdPointer = -1;
+
 const getSeekDistance = () => process.env.SEEK_DISTANCE ? parseInt(process.env.SEEK_DISTANCE, 10) : 15;
 
 const getMaxRolloffDistance = () => parseInt(process.env.MAX_ROLLOFF_DISTANCE, 10) || 250;
 
+const hasAds = (): boolean =>
+	process.env.DUKE_ADS_ID && process.env.DUKE_ADS_DISABLED?.toLowerCase() !== 'true'
+
+const getAdsRerunTime = () => (process.env.DUKE_ADS_RERUN_TIME) ? parseInt(process.env.DUKE_ADS_RERUN_TIME, 10) : 20
+
 const getNextAd = (): DukeAds | null => {
-	const adRerunTime = (process.env.DUKE_ADS_RERUN_TIME) ? parseInt(process.env.DUKE_ADS_RERUN_TIME, 10) : 20
 	const adId = process.env.DUKE_ADS_ID;
 	if (adId && process.env.DUKE_ADS_DISABLED?.toLowerCase() !== 'true') {
+		const ads = adId.split(',')
+		const adsLength = ads.length
+		if (currentAdPointer === -1 && adsLength > 1) {
+			currentAdPointer = Math.floor(Math.random() * (adsLength));
+		}
+		const dukeAdsId = ads[adsLength === 1 ? 0 : currentAdPointer % adsLength]
+		currentAdPointer++
 		return {
-			dukeAdsId: adId,
-			dukeAdsRerunTime: adRerunTime
+			dukeAdsId,
+			dukeAdsRerunTime: getAdsRerunTime()
 		}
 	}
 	return null
@@ -132,14 +145,14 @@ export default class App implements MediaControlHandler {
 
 	onPlay = async (user: MRE.User) => {
 		const {state, soundOptions, currentVideoStream, videoActor, dukeAdslastPlayTimestamp = 0} = this.context;
-		const { dukeAdsRerunTime, dukeAdsId } = getNextAd() || {}
 		if ((state === 'stopped' || !state) && currentVideoStream?.id) {
 			let playId = currentVideoStream?.id;
 			let progress = this.context.progress || {
 				runningTime: 0,
 				startTime: 0,
 			}
-			if (dukeAdsId && Date.now() - dukeAdslastPlayTimestamp > dukeAdsRerunTime * (1000 * 60) && dukeAdsId) {
+			if (hasAds() && Date.now() - dukeAdslastPlayTimestamp > getAdsRerunTime() * (1000 * 60)) {
+				const { dukeAdsId } = getNextAd()
 				playId = dukeAdsId;
 				this.context.dukeAdsPlayActive = true
 				this.context.dukeAdsProgress = this.context.dukeAdsProgress || { ...progress }
